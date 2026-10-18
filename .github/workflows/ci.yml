@@ -28,6 +28,16 @@ jobs:
     name: Integration verification (isolation, auth, onboarding)
     runs-on: ubuntu-latest
     needs: static
+    # Dev-stack credentials for the disposable ephemeral containers (TICKET-103:
+    # the repo's compose file has NO baked-in secret defaults anymore — it
+    # requires these from the environment). The @retail/env production guard
+    # keeps these values out of any real deployment.
+    env:
+      POSTGRES_PASSWORD: retail-dev-password
+      POSTGRES_APP_PASSWORD: retail-app-dev-password
+      POSTGRES_MIGRATE_PASSWORD: retail-migrate-dev-password
+      KEYCLOAK_ADMIN_PASSWORD: admin-dev-password
+      KEYCLOAK_ONBOARDING_CLIENT_SECRET: retail-onboarding-dev-secret
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

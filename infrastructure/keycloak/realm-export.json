@@ -87,7 +87,6 @@
                         "name":  "Backend API (audience)",
                         "protocol":  "openid-connect",
                         "publicClient":  false,
-                        "secret":  "retail-api-dev-secret",
                         "standardFlowEnabled":  false,
                         "directAccessGrantsEnabled":  false,
                         "serviceAccountsEnabled":  false
@@ -98,7 +97,6 @@
                         "description":  "Least-privilege client for the API onboarding module: manage users only (INFRA-011)",
                         "protocol":  "openid-connect",
                         "publicClient":  false,
-                        "secret":  "retail-onboarding-dev-secret",
                         "standardFlowEnabled":  false,
                         "directAccessGrantsEnabled":  false,
                         "serviceAccountsEnabled":  true

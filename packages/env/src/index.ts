@@ -18,6 +18,10 @@ const envSchema = z.object({
   POSTGRES_APP_PASSWORD: z.string().optional(),
   POSTGRES_MIGRATE_USER: z.string().default("retail_migrate"),
   POSTGRES_MIGRATE_PASSWORD: z.string().optional(),
+  // Container-level only (postgres + keycloak services in docker-compose).
+  // The API and tools never use it, but it is declared here so the
+  // production dev-default guard below can catch it leaking into prod.
+  POSTGRES_PASSWORD: z.string().optional(),
 
   // IAM (Phase 3)
   JWT_ISSUER_URL: z.string().default("http://localhost:8082/realms/retail"),
@@ -46,6 +50,51 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>;
 
+/**
+ * TICKET-103 (SEC-004): credentials must never come from the repo. The repo
+ * still needs *dev placeholder* values (.env.example, docker-compose fixtures,
+ * CI), so instead of banning those strings everywhere, production startup
+ * rejects any credential that matches a known dev default. Copying .env.example
+ * to a production host then fails fast instead of silently deploying
+ * well-known secrets.
+ */
+const KNOWN_DEV_DEFAULT_CREDENTIALS = new Set([
+  "retail-dev-password",
+  "retail-app-dev-password",
+  "retail-migrate-dev-password",
+  "admin-dev-password",
+  "retail-api-dev-secret",
+  "retail-onboarding-dev-secret"
+]);
+
+const CREDENTIAL_FIELDS = [
+  "POSTGRES_PASSWORD",
+  "POSTGRES_APP_PASSWORD",
+  "POSTGRES_MIGRATE_PASSWORD",
+  "KEYCLOAK_ADMIN_PASSWORD",
+  "KEYCLOAK_ONBOARDING_CLIENT_SECRET"
+] as const;
+
+export function assertNoDevDefaultCredentials(parsed: Env): void {
+  if (parsed.NODE_ENV !== "production") {
+    return;
+  }
+  for (const field of CREDENTIAL_FIELDS) {
+    const value = parsed[field];
+    if (value === undefined || value === "") {
+      // Missing credentials fail later, at the entrypoint's requireEnvVar.
+      continue;
+    }
+    if (KNOWN_DEV_DEFAULT_CREDENTIALS.has(value)) {
+      console.error(
+        `${field} is set to a known development default. Refusing to start in ` +
+          `production: real credentials must be provided out-of-band (SEC-004).`
+      );
+      process.exit(1);
+    }
+  }
+}
+
 export function loadEnv(): Env {
   const parsed = envSchema.safeParse(process.env);
   if (!parsed.success) {
@@ -53,6 +102,7 @@ export function loadEnv(): Env {
     console.error("Invalid environment configuration:", JSON.stringify(parsed.error.flatten().fieldErrors, null, 2));
     process.exit(1);
   }
+  assertNoDevDefaultCredentials(parsed.data);
   return parsed.data;
 }
 
