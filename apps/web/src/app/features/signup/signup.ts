@@ -18,7 +18,7 @@ interface SignupResponse {
     <main class="shell">
       @if (done(); as done) {
         <section class="card">
-          <h1>Workspace created 🎉</h1>
+          <h1>Workspace created</h1>
           <p>
             <strong>{{ done.name }}</strong> is ready at
             <span class="muted">{{ done.slug }}</span>.
@@ -35,21 +35,23 @@ interface SignupResponse {
             </label>
             <label>Workspace address
               <input type="text" name="slug" [(ngModel)]="slug" required pattern="[a-z][a-z0-9-]+" placeholder="acme-retail" />
+              <span class="hint">Lowercase letters, numbers and hyphens — starts with a letter.</span>
             </label>
             <label>Admin email
               <input type="email" name="adminEmail" [(ngModel)]="adminEmail" required placeholder="you@company.com" />
             </label>
             <label>Password
-              <input type="password" name="adminPassword" [(ngModel)]="adminPassword" required minlength="10" maxlength="128" placeholder="Min. 10 chars, upper + lower + digit" />
+              <input type="password" name="adminPassword" [(ngModel)]="adminPassword" required minlength="10" maxlength="128" placeholder="••••••••" />
+              <span class="hint">At least 10 characters, with upper case, lower case and a number.</span>
             </label>
             @if (error(); as error) {
-              <p class="error">{{ error }}</p>
+              <p class="error" role="alert">{{ error }}</p>
             }
             <button type="submit" [disabled]="submitting()">
               {{ submitting() ? 'Creating…' : 'Create workspace' }}
             </button>
           </form>
-          <p class="muted">Already have an account? <a routerLink="/">Sign in</a></p>
+          <p class="muted footer-note">Already have an account? <a routerLink="/">Sign in</a></p>
         </section>
       }
     </main>
@@ -87,7 +89,7 @@ export class Signup {
           this.submitting.set(false);
         },
         error: (err) => {
-          this.error.set(err.error?.error ?? 'Signup failed, please try again.');
+          this.error.set(err.error?.error ?? "We couldn't create your workspace right now. Please try again.");
           this.submitting.set(false);
         }
       });

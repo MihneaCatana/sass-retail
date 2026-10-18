@@ -1,0 +1,50 @@
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 8%);
+  padding: 2rem 2.5rem;
+  text-align: left;
+  max-width: 26rem;
+  width: 100%;
+  margin: auto;
+  animation: card-rise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  h1 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+
+  button {
+    margin-top: 1.5rem;
+    padding: 0.55rem 1.25rem;
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+
+    &:hover { background: #1d4ed8; }
+
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+  }
+
+  .footer-note {
+    margin: 1.25rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid #d1d5db;
+  }
+
+  .muted { color: #6b7280; }
+}
+
+@keyframes card-rise {
+  from { opacity: 0.96; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
+}

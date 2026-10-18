@@ -1,20 +1,24 @@
 .shell {
   min-height: 100vh;
   display: grid;
-  place-items: center;
   font-family: system-ui, sans-serif;
   background: #f5f6f8;
   padding: 1rem;
 }
 
+/* margin:auto centers the card and degrades safely: when the card is taller
+   than the viewport the page scrolls normally instead of clipping the top
+   (grid place-items:center would clip it). */
 .card {
+  margin: auto;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 12px rgb(0 0 0 / 8%);
   padding: 2rem 2.5rem;
-  text-align: center;
+  text-align: left;
   max-width: 26rem;
   width: 100%;
+  animation: card-rise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
 
   h1 {
     margin: 0 0 1rem;
@@ -73,6 +77,21 @@
 
   a {
     color: #2563eb;
+
+    &:focus-visible {
+      outline: 2px solid #2563eb;
+      outline-offset: 2px;
+    }
+  }
+
+  button:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+
+  .hint {
+    color: #6b7280;
+    font-size: 0.85rem;
   }
 
   .muted {
@@ -84,4 +103,19 @@
     color: #dc2626;
     font-size: 0.85rem;
   }
+
+  .footer-note {
+    margin: 1.25rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid #d1d5db;
+  }
+}
+
+@keyframes card-rise {
+  from { opacity: 0.96; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
 }

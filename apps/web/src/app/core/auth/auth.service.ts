@@ -19,6 +19,10 @@ export class AuthService {
   }
 
   logout(): void {
-    this.oidcSecurityService.logoff();
+    // logoff() returns a COLD observable — without subscribing nothing happens
+    // (no end-session redirect to Keycloak, no local state reset).
+    this.oidcSecurityService.logoff().subscribe({
+      error: (err) => console.error('Logout failed', err)
+    });
   }
 }

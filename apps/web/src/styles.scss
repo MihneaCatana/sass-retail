@@ -1,1 +1,31 @@
-/* You can add global styles to this file, and also import other style files */
+/* Layout reset — body margin + content-box sizing break the 100vh shells */
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Browser surfaces — themed from the palette (apps/web/DESIGN.md) */
+
+::selection {
+  background: rgb(37 99 235 / 18%);
+}
+
+input,
+textarea {
+  caret-color: #2563eb;
+}
+
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-text-fill-color: #111827;
+  caret-color: #111827;
+}
+

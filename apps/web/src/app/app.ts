@@ -1,6 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { RouterLink } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { AuthService } from './core/auth/auth.service';
@@ -19,17 +19,12 @@ interface CurrentTenant {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterLink],
+  imports: [RouterOutlet],
   styleUrl: './app.scss',
   template: `
     <main class="shell">
       @if (!isAuthenticated()) {
-        <section class="card">
-          <h1>sass-retail</h1>
-          <p>Sign in to your workspace.</p>
-          <button type="button" (click)="login()">Sign in</button>
-          <p class="muted">New here? <a routerLink="/signup">Create your workspace</a></p>
-        </section>
+        <router-outlet />
       } @else {
         <section class="card">
           <h1>sass-retail</h1>
@@ -87,10 +82,6 @@ export class App {
           err.status === 403 ? 'Your account is not linked to a tenant yet.' : 'Could not load tenant data.'
         )
     });
-  }
-
-  login(): void {
-    this.auth.login();
   }
 
   logout(): void {

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-18T20:00:00Z",
+  "title": "Design System: sass-retail Web",
+  "extensions": {
+    "colorMeta": {
+      "primary": { "role": "primary", "displayName": "Daylight Blue", "canonical": "#2563eb" },
+      "primary-hover": { "role": "primary", "displayName": "Deep Water Blue", "canonical": "#1d4ed8", "purpose": "Hover state of Daylight Blue; always darker so hover means pressing in." },
+      "primary-disabled": { "role": "primary", "displayName": "Faded Sky Blue", "canonical": "#93c5fd", "purpose": "Disabled/pending primary buttons." },
+      "page-bg": { "role": "neutral", "displayName": "Stockroom Floor", "canonical": "#f5f6f8", "purpose": "Full-page background; lets white cards lift without visible edges." },
+      "surface": { "role": "neutral", "displayName": "White", "canonical": "#ffffff", "purpose": "Card surfaces and text on primary fills." },
+      "text-strong": { "role": "neutral", "displayName": "Ink", "canonical": "#111827", "purpose": "Headings and input values (implied browser default)." },
+      "text-label": { "role": "neutral", "displayName": "Slate Label", "canonical": "#374151", "purpose": "Form labels, one step softer than Ink." },
+      "text-muted": { "role": "neutral", "displayName": "Shelf Grey", "canonical": "#6b7280", "purpose": "Secondary/muted helper text." },
+      "border": { "role": "neutral", "displayName": "Wire Grey", "canonical": "#d1d5db", "purpose": "1px input borders — quietest border that still reads as a field." },
+      "error": { "role": "tertiary", "displayName": "Ledger Red", "canonical": "#dc2626", "purpose": "Error text only; never decorative." }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "The single h1 per card — the task title." },
+      "body": { "displayName": "Body", "purpose": "Paragraphs, feedback, button text." },
+      "label": { "displayName": "Label", "purpose": "Field labels, helper/muted text, error text." }
+    },
+    "shadows": [
+      { "name": "card-ambient", "value": "0 2px 12px rgb(0 0 0 / 8%)", "purpose": "Structural only: lifts the one working card off the Stockroom Floor. No hover shadows." }
+    ],
+    "breakpoints": [],
+    "motion": [
+      { "name": "card-rise", "value": "0.24s cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The page's one authored moment: the card rises 6px into place on load; prefers-reduced-motion disables it. No second entrance, no scroll-triggered motion." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The page's single working surface: white, 12px radius, centered, one ambient shadow.",
+      "html": "<section class=\"ds-card\"><h1>Task title</h1><p>Supporting copy.</p></section>",
+      "css": ".ds-card { background: #ffffff; border-radius: 12px; box-shadow: 0 2px 12px rgb(0 0 0 / 8%); padding: 2rem 2.5rem; text-align: center; max-width: 30rem; } .ds-card h1 { margin: 0 0 0.5rem; font-size: 1.4rem; font-weight: 700; } .ds-card p { margin: 0; font-size: 0.95rem; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Daylight Blue fill, white text, weight 500; block variant spans the card in single-action screens. Deepens on hover, fades when disabled.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Create workspace</button>",
+      "css": ".ds-btn-primary { width: 100%; padding: 0.55rem 1.25rem; border: none; border-radius: 8px; background: #2563eb; color: #ffffff; font-size: 0.95rem; font-weight: 500; cursor: pointer; } .ds-btn-primary:hover { background: #1d4ed8; } .ds-btn-primary:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; } .ds-btn-primary:disabled { background: #93c5fd; cursor: wait; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Stacked-label text field: Wire Grey border, Daylight Blue focus ring that replaces the border.",
+      "html": "<label class=\"ds-field\">Company name<input class=\"ds-input\" type=\"text\" name=\"companyName\" placeholder=\"Acme Retail\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: #374151; text-align: left; } .ds-input { padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.95rem; } .ds-input:focus { outline: 2px solid #2563eb; border-color: transparent; }"
+    },
+    {
+      "name": "Muted helper with link",
+      "kind": "custom",
+      "refersTo": "text-muted",
+      "description": "Shelf Grey helper line carrying a Daylight Blue link to the sibling screen.",
+      "html": "<p class=\"ds-muted\">Already have an account? <a class=\"ds-link\" href=\"/\">Sign in</a></p>",
+      "css": ".ds-muted { color: #6b7280; font-size: 0.85rem; } .ds-link { color: #2563eb; text-decoration: none; } .ds-link:hover { text-decoration: underline; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Well-Lit Stockroom",
+    "overview": "An organized-clarity system for a retail back office: a bright, evenly lit space where every item is findable and every state is visible. Pages are single-purpose — one centered white card on a quiet daylight-grey floor — with generous whitespace and no ornament. Color is almost entirely neutral; one blue speaks for every interactive intent (actions, links, focus). There is no motion vocabulary yet — state changes are instant.",
+    "keyCharacteristics": [
+      "One card per page, centered both axes, 26rem wide",
+      "Card content left-aligned - the card is centered, its content is not",
+      "A single accent blue used for action, focus, and links",
+      "Soft 8px controls inside softer 12px cards",
+      "One ambient shadow per page, carried by the card only",
+      "Footer meta separated by a 1px hairline divider",
+      "One authored entrance moment - the card rises into place (reduced-motion respected)",
+      "The same system overlays the Keycloak login page (CSS-only theme over stock keycloak.v2 markup)"
+    ],
+    "rules": [
+      { "name": "The Single Voice Rule", "body": "Daylight Blue is the only accent on any screen, shared by buttons, links, and focus rings. A second decorative hue breaks the system.", "section": "colors" },
+      { "name": "The Shadow-As-Structure Rule", "body": "Shadow lifts the one working card off the Stockroom Floor — never hover garnish or depth theater.", "section": "elevation" },
+      { "name": "The Instant-State Rule", "body": "State is shown through fill change, label swap, or red text, instantly - plus the single card-rise entrance. No second motion moment.", "section": "components" }
+    ],
+    "dos": [
+      "Do reuse the one card + one blue voice for every new screen until a real second component is needed",
+      "Do keep sizes on the 0.25-2.5rem scale and radii at 8px/12px",
+      "Do show state via disabled fill, Ledger Red error text, or swapped label text"
+    ],
+    "donts": [
+      "Don't add a second accent hue, a webfont, or a hover shadow",
+      "Don't invent elevation layers, gradients, or motion vocabulary",
+      "Don't exceed 26-30rem card widths or stack a second card on a page without updating this record"
+    ]
+  }
+}
+
