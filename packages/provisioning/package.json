@@ -1,0 +1,20 @@
+{
+  "name": "@retail/provisioning",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo \"covered by @retail/tools test:isolation\""
+  },
+  "dependencies": {
+    "node-pg-migrate": "^7.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.7.3"
+  }
+}

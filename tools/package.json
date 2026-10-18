@@ -1,0 +1,30 @@
+{
+  "name": "@retail/tools",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "migrate:platform": "tsx scripts/migrate-platform.ts",
+    "migrate:tenants": "tsx scripts/migrate-all-tenants.ts",
+    "provision": "tsx scripts/provision-tenant.ts",
+    "configure:keycloak": "tsx scripts/configure-realm.ts",
+    "verify:auth": "tsx scripts/verify-auth-flow.ts",
+    "verify:onboarding": "tsx scripts/verify-onboarding.ts",
+    "test:isolation": "tsx scripts/test-isolation.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "test": "echo \"run pnpm --filter @retail/tools test:isolation for the integration check\""
+  },
+  "dependencies": {
+    "@retail/env": "workspace:*",
+    "@retail/provisioning": "workspace:*",
+    "dotenv": "^16.4.7",
+    "node-pg-migrate": "^7.7.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

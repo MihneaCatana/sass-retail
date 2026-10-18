@@ -1,0 +1,151 @@
+name: sass-retail-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: retail-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-retail}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-retail-dev-password}
+      POSTGRES_DB: ${POSTGRES_DB:-retail}
+      # Consumed by init/02-roles.sh (creates the app + migrate roles)
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:-retail-app-dev-password}
+      POSTGRES_MIGRATE_PASSWORD: ${POSTGRES_MIGRATE_PASSWORD:-retail-migrate-dev-password}
+    ports:
+      # Host port 5432 is commonly taken by other local projects -> default 5433
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-retail} -d ${POSTGRES_DB:-retail}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    container_name: retail-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin-dev-password}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin-dev-password}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER:-retail}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-retail-dev-password}
+      KC_HTTP_PORT: 8080
+      KC_HEALTH_ENABLED: "true"
+      # Trust X-Forwarded-* from nginx so issuer/redirects use the public origin
+      KC_PROXY_HEADERS: xforwarded
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "${KEYCLOAK_PORT:-8081}:8080"
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && echo -e 'GET /health/ready HTTP/1.1\\nHost: localhost\\nConnection: close\\n\\n' >&3 && cat <&3 | grep -q '\"status\": \"UP\"'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  # One-shot deploy-time migrations: platform + every tenant schema.
+  # Runs on every `up` (idempotent); fails loudly on errors.
+  migrations:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    command: ["node", "dist/migrate.js"]
+    environment:
+      NODE_ENV: production
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-retail}
+      POSTGRES_MIGRATE_USER: ${POSTGRES_MIGRATE_USER:-retail_migrate}
+      POSTGRES_MIGRATE_PASSWORD: ${POSTGRES_MIGRATE_PASSWORD:-retail-migrate-dev-password}
+      MIGRATIONS_DIR: /app/migrations
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    # Same image and same command as production — only env vars differ.
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    container_name: retail-api
+    environment:
+      NODE_ENV: development
+      API_PORT: 3000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-retail}
+      POSTGRES_APP_USER: ${POSTGRES_APP_USER:-retail_app}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:-retail-app-dev-password}
+      # Provisioning only (isolated in the onboarding module, see DB-003)
+      POSTGRES_MIGRATE_PASSWORD: ${POSTGRES_MIGRATE_PASSWORD:-retail-migrate-dev-password}
+      JWT_ISSUER_URL: http://localhost:8082/realms/retail
+      JWT_JWKS_URL: http://keycloak:8080/realms/retail/protocol/openid-connect/certs
+      JWT_AUDIENCE: retail-api
+      # Onboarding (Phase 4): scoped Keycloak service client (INFRA-011) + tenant migrations
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_ONBOARDING_CLIENT_ID: ${KEYCLOAK_ONBOARDING_CLIENT_ID:-retail-onboarding}
+      KEYCLOAK_ONBOARDING_CLIENT_SECRET: ${KEYCLOAK_ONBOARDING_CLIENT_SECRET:-retail-onboarding-dev-secret}
+      MIGRATIONS_DIR: /app/migrations
+      CORS_ORIGIN: http://localhost:4200,http://localhost:8082
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/api/health/live').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  web:
+    # Same image as production: static build served by nginx.
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    container_name: retail-web
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:alpine
+    container_name: retail-nginx
+    ports:
+      # Host port 80 is commonly taken by other local projects -> default 8082
+      - "${NGINX_PORT:-8082}:80"
+    environment:
+      # Injected into nginx templates (X-Forwarded-Port for Keycloak issuer)
+      NGINX_PUBLIC_PORT: ${NGINX_PORT:-8082}
+    volumes:
+      - ./nginx/templates:/etc/nginx/templates:ro
+      # Disable the stock welcome-page server
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      web:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

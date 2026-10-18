@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+.angular/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs / coverage
+coverage/
+*.log
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# OS
+Thumbs.db
+.DS_Store

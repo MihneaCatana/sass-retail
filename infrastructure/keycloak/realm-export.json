@@ -1,0 +1,163 @@
+﻿{
+    "realm":  "retail",
+    "displayName":  "sass-retail",
+    "enabled":  true,
+    "registrationAllowed":  false,
+    "loginWithEmailAllowed":  true,
+    "sslRequired":  "none",
+    "passwordPolicy":  "length(10) and digits(1) and upperCase(1) and lowerCase(1)",
+    "bruteForceProtected":  true,
+    "failureFactor":  10,
+    "waitIncrementSeconds":  60,
+    "maxFailureWaitSeconds":  900,
+    "minimumQuickLoginWaitSeconds":  60,
+    "maxDeltaTimeSeconds":  43200,
+    "roles":  {
+                  "realm":  [
+                                {
+                                    "name":  "platform-admin",
+                                    "description":  "Platform staff (full cross-tenant access, audit-logged)"
+                                },
+                                {
+                                    "name":  "tenant-admin",
+                                    "description":  "Administrator of one tenant"
+                                },
+                                {
+                                    "name":  "tenant-user",
+                                    "description":  "Regular user of one tenant"
+                                }
+                            ]
+              },
+    "clients":  [
+                    {
+                        "clientId":  "retail-web",
+                        "name":  "Web application",
+                        "protocol":  "openid-connect",
+                        "publicClient":  true,
+                        "standardFlowEnabled":  true,
+                        "directAccessGrantsEnabled":  false,
+                        "redirectUris":  [
+                                             "http://localhost/*",
+                                             "http://localhost:4200/*",
+                                             "http://localhost:8082/*"
+                                         ],
+                        "webOrigins":  [
+                                           "http://localhost",
+                                           "http://localhost:4200",
+                                           "http://localhost:8082"
+                                       ],
+                        "defaultClientScopes":  [
+                                                    "profile",
+                                                    "email",
+                                                    "roles"
+                                                ],
+                        "attributes":  {
+                                           "post.logout.redirect.uris":  "http://localhost/*##http://localhost:4200/*##http://localhost:8082/*"
+                                       },
+                        "protocolMappers":  [
+                                                {
+                                                    "name":  "tenant-slug-claim",
+                                                    "protocol":  "openid-connect",
+                                                    "protocolMapper":  "oidc-usermodel-attribute-mapper",
+                                                    "consentRequired":  false,
+                                                    "config":  {
+                                                                   "user.attribute":  "tenant_slug",
+                                                                   "claim.name":  "tenant_slug",
+                                                                   "jsonType.label":  "String",
+                                                                   "id.token.claim":  "true",
+                                                                   "access.token.claim":  "true",
+                                                                   "userinfo.token.claim":  "true"
+                                                               }
+                                                },
+                                                {
+                                                    "name":  "retail-api-audience",
+                                                    "protocol":  "openid-connect",
+                                                    "protocolMapper":  "oidc-audience-mapper",
+                                                    "consentRequired":  false,
+                                                    "config":  {
+                                                                   "included.client.audience":  "retail-api",
+                                                                   "id.token.claim":  "false",
+                                                                   "access.token.claim":  "true"
+                                                               }
+                                                }
+                                            ]
+                    },
+                    {
+                        "clientId":  "retail-api",
+                        "name":  "Backend API (audience)",
+                        "protocol":  "openid-connect",
+                        "publicClient":  false,
+                        "secret":  "retail-api-dev-secret",
+                        "standardFlowEnabled":  false,
+                        "directAccessGrantsEnabled":  false,
+                        "serviceAccountsEnabled":  false
+                    },
+                    {
+                        "clientId":  "retail-onboarding",
+                        "name":  "Onboarding service client",
+                        "description":  "Least-privilege client for the API onboarding module: manage users only (INFRA-011)",
+                        "protocol":  "openid-connect",
+                        "publicClient":  false,
+                        "secret":  "retail-onboarding-dev-secret",
+                        "standardFlowEnabled":  false,
+                        "directAccessGrantsEnabled":  false,
+                        "serviceAccountsEnabled":  true
+                    }
+                ],
+    "users":  [
+                  {
+                      "username":  "platform-admin",
+                      "email":  "admin@retail.local",
+                      "enabled":  true,
+                      "emailVerified":  true,
+                      "credentials":  [
+                                          {
+                                              "type":  "password",
+                                              "value":  "PlatformAdmin-Dev1",
+                                              "temporary":  false
+                                          }
+                                      ],
+                      "realmRoles":  [
+                                         "platform-admin"
+                                     ],
+                      "lastName":  "Admin",
+                      "firstName":  "Platform"
+                  },
+                  {
+                      "username":  "demo-acme",
+                      "email":  "demo@acme.test",
+                      "enabled":  true,
+                      "emailVerified":  true,
+                      "attributes":  {
+                                         "tenant_slug":  [
+                                                             "acme"
+                                                         ]
+                                     },
+                      "credentials":  [
+                                          {
+                                              "type":  "password",
+                                              "value":  "DemoAcme-Dev1",
+                                              "temporary":  false
+                                          }
+                                      ],
+                      "realmRoles":  [
+                                         "tenant-user"
+                                     ],
+                      "lastName":  "Acme",
+                      "firstName":  "Demo"
+                  },
+                  {
+                      "username":  "service-account-retail-onboarding",
+                      "enabled":  true,
+                      "serviceAccountClientId":  "retail-onboarding",
+                      "clientRoles":  {
+                                          "realm-management":  [
+                                                                   "view-users",
+                                                                   "query-users",
+                                                                   "manage-users"
+                                                               ]
+                                      }
+                  }
+              ]
+}
+
