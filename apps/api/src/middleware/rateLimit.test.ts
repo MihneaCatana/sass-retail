@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Request, Response } from "express";
-import { rateLimit } from "./rateLimit";
+import { rateLimit, tenantRateLimit } from "./rateLimit";
 
 function mockReq(ip: string): Request {
   return { ip } as unknown as Request;
@@ -53,3 +53,38 @@ describe("rateLimit", () => {
     vi.useRealTimers();
   });
 });
+
+describe("tenantRateLimit", () => {
+  function makeReq(ip: string, tenantSlug?: string): Request {
+    return {
+      ip,
+      auth: tenantSlug ? { tenantSlug } : undefined
+    } as unknown as Request;
+  }
+
+  it("limits each tenant independently, even from the same IP", () => {
+    const middleware = tenantRateLimit({ windowMs: 60_000, max: 2 });
+    const next = vi.fn();
+
+    // Tenant A: 2 allowed, 3rd throttled.
+    for (let i = 0; i < 2; i++) middleware(makeReq("1.1.1.1", "acme"), mockRes(), next);
+    const resA = mockRes();
+    middleware(makeReq("1.1.1.1", "acme"), resA, next);
+    expect(resA.status).toHaveBeenCalledWith(429);
+
+    // Tenant B on the SAME IP still has its own full budget (SEC-008).
+    middleware(makeReq("1.1.1.1", "globex"), mockRes(), next);
+    expect(next).toHaveBeenCalledTimes(3);
+  });
+
+  it("passes through requests without a tenant (authJwt 401s them instead)", () => {
+    const middleware = tenantRateLimit({ windowMs: 60_000, max: 1 });
+    const next = vi.fn();
+
+    middleware(makeReq("1.1.1.1"), mockRes(), next);
+    middleware(makeReq("1.1.1.1"), mockRes(), next);
+
+    expect(next).toHaveBeenCalledTimes(2);
+  });
+});
+

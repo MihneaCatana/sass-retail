@@ -37,29 +37,32 @@ Actionable tickets for remaining work. Phase 6 items reference their
 - **AC:** grep of the repo contains no real secrets; env guard test for prod defaults.
 
 ## TICKET-104 — Security headers + CSP on the SPA origin (INFRA-008)
-- **Type:** security · **Phase:** 6 · **Status:** open
-- **Scope:** CSP (script/style/img/connect-src allow-list), `nosniff`,
-  `frame-ancestors 'none'`, HSTS once TLS exists; add headers in the web
-  runtime nginx and outer nginx template; consider in-memory token storage
-  in `angular-auth-oidc-client`.
-- **AC:** headers verified via `curl -I` against the app origin; app still works.
+- **Type:** security · **Phase:** 6 · **Status:** done (2026-10-18)
+- **Outcome:** headers enforced in `apps/web/nginx-spa.conf` (single
+  enforcement point, see TECH_DEBT.md INFRA-008 for the rationale);
+  HSTS deferred until TLS (TICKET-102); in-memory token storage evaluated
+  and deferred (library defaults to sessionStorage; in-memory migration
+  needs a live browser regression pass). Remaining: none until TICKET-102.
 
 ## TICKET-105 — Bounded tenant cache + per-tenant rate limiting (SEC-005)
-- **Type:** security/quality · **Phase:** 6 · **Status:** open
-- **Scope:** Tenant-store cache only caches positive lookups (or LRU cap);
-  generalize the onboarding rate limiter into per-tenant middleware for
-  API routes.
-- **AC:** negative lookups don't grow the cache (unit test); rate limit applies per tenant token.
+- **Type:** security/quality · **Phase:** 6 · **Status:** done (2026-10-18)
+- **Outcome:** tenant cache is positive-lookups-only + LRU-capped at 1,000
+  entries (`tenantStore.ts`); `tenantRateLimit` middleware buckets by the
+  verified `tenant_slug` claim and is applied to `/api/me` and `/api/tenants`
+  (300 req/min/tenant). Distributed rate limiting (multi-instance) stays in
+  TECH_DEBT as a scaling note.
 
 ## TICKET-106 — JWT algorithm pinning check (SEC-007)
-- **Type:** security · **Status:** open — verify `algorithms: ["RS256"]`
-  present in `authJwt.ts` (should already be done in TICKET-008; confirm or close).
+- **Type:** security · **Status:** done (2026-10-18)
+- **Outcome:** verified the ticket was NOT already satisfied in TICKET-008
+  (the pin was missing) and implemented `algorithms: ["RS256"]` in
+  `authJwt.ts`.
 
 ## TICKET-107 — Bind dev ports to loopback (INFRA-009)
-- **Type:** infrastructure · **Status:** open
-- **Scope:** `"127.0.0.1:5433:5432"` etc. for postgres/keycloak in compose.
-- **AC:** ports not reachable on non-loopback interfaces; stack still usable locally.
-
+- **Type:** infrastructure · **Status:** done (2026-10-18)
+- **Outcome:** all host-published ports in compose bound to `127.0.0.1`
+  (postgres 5433, Keycloak 8081, api 3000, nginx 8082). Stack remains fully
+  usable locally.
 ## TICKET-108 — Dependency scanning (INFRA-010)
 - **Type:** quality · **Status:** open
 - **Scope:** `pnpm audit` in CI (fail on high/critical); optionally Renovate.

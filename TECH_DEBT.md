@@ -7,11 +7,11 @@ Known security & quality debt, deliberately deferred. Source: security audit of 
 | ~~[DB-003](#db-003)~~ | ~~High~~ | **FIXED (2026-10-17)** — per-tenant DB roles + `SET LOCAL ROLE` |
 | [INFRA-002](#infra-002) | High | Keycloak runs in `start-dev` mode, `sslRequired: none` |
 | [SEC-004](#sec-004) | Medium | Dev credentials + dormant client secret committed to the repo |
-| [INFRA-008](#infra-008) | Medium | No security headers (CSP etc.) on the Angular origin |
-| [SEC-005](#sec-005) | Low | Unbounded tenant-cache growth from arbitrary slugs |
+| ~~[INFRA-008](#infra-008)~~ | ~~Medium~~ | **FIXED (2026-10-18)** — security headers + CSP enforced on the SPA origin |
+| ~~[SEC-005](#sec-005)~~ | ~~Low~~ | **FIXED (2026-10-18)** — bounded positive-only tenant cache + per-tenant rate limiting |
 | ~~[SEC-006](#sec-006)~~ | ~~Low~~ | **FIXED (2026-10-17)** — explicit 401 guard in `meRouter` |
-| [SEC-007](#sec-007) | Low | JWT algorithms not pinned |
-| [INFRA-009](#infra-009) | Low | Dev ports bound to all interfaces with weak defaults |
+| ~~[SEC-007](#sec-007)~~ | ~~Low~~ | **FIXED (2026-10-18)** — JWT algorithms pinned to `RS256` |
+| ~~[INFRA-009](#infra-009)~~ | ~~Low~~ | **FIXED (2026-10-18)** — all dev ports bound to loopback |
 | [INFRA-010](#infra-010) | Low | No dependency scanning in CI |
 
 ---
@@ -42,31 +42,29 @@ Known security & quality debt, deliberately deferred. Source: security audit of 
 
 **Fix:** remove the `secret` field from `retail-api` (or make it a pure "audience" bearer-only-style config); prod credentials must come from a secret store with a startup check rejecting known dev defaults when `NODE_ENV=production`.
 
-## INFRA-008 — No security headers on the Angular origin — Medium
+## INFRA-008 — No security headers on the Angular origin — ~~Medium~~ **FIXED (2026-10-18)**
 
-The SPA (served by the web runtime nginx and proxied by the outer nginx) has no CSP, `frame-ancestors`, `X-Content-Type-Options`, or HSTS. `angular-auth-oidc-client` stores tokens in browser storage by default — any XSS becomes token theft with refresh rights.
+~~The SPA (served by the web runtime nginx and proxied by the outer nginx) has no CSP, `frame-ancestors`, `X-Content-Type-Options`, or HSTS.~~
 
-**Fix:** add a security-headers block to the web runtime nginx config and the outer nginx `location /` (CSP allow-list for scripts/styles/connect, `frame-ancestors 'none'`, HSTS once TLS exists). Evaluate the OIDC library's in-memory token storage.
+**Implemented fix:** security headers enforced in `apps/web/nginx-spa.conf` — the single enforcement point (duplicated headers at the outer nginx layer can make browsers reject or intersect policies unpredictably). Applied: `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, CSP (`default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'`) with `always` so they apply to SPA-fallback 404s too. API responses keep helmet's equivalents. HSTS deferred until TLS (INFRA-002). Token storage evaluated: the OIDC library defaults to sessionStorage (not localStorage); migrating to fully in-memory storage is deferred until the login flow can be regression-tested in a real browser.
 
-## SEC-005 — Unbounded tenant-cache growth — Low
+## SEC-005 — Unbounded tenant-cache growth — ~~Low~~ **FIXED (2026-10-18)**
 
-`apps/api/src/modules/tenants/tenantStore.ts` caches negative lookups too (`cache.set` runs for every distinct bogus slug) → unbounded heap growth = remote memory-DoS once public.
+~~`apps/api/src/modules/tenants/tenantStore.ts` cached negative lookups too, growing unbounded.~~
 
-**Fix:** cache only positive results, or cap the map (LRU, few thousand entries). Pair with per-tenant rate limiting (Phase 6).
+**Implemented fix:** the tenant cache is now **positive-lookups-only** (misses always hit the DB — they are cheap and bounded by the registry's PK index) **and** capped by `CACHE_MAX_ENTRIES = 1_000` with LRU eviction (recency refreshed on hit). Paired with `tenantRateLimit` middleware on authenticated API routes, bucketed by the verified `tenant_slug` claim so one tenant cannot starve another even behind a shared IP. Proven by `apps/api/src/modules/tenants/tenantStore.test.ts` (misses don't grow the cache, LRU eviction works) and `apps/api/src/middleware/rateLimit.test.ts` (per-tenant buckets independent even from the same IP).
 
 ## SEC-006 — `meRouter` non-null assertion — ~~Low~~ **FIXED (2026-10-17)**
 
 ~~`apps/api/src/routes/me.ts` used `req.auth!`.~~ Replaced with an explicit 401 guard.
 
-## SEC-007 — JWT algorithms not pinned — Low
+## SEC-007 — JWT algorithms not pinned — ~~Low~~ **FIXED (2026-10-18)**
 
-`apps/api/src/middleware/authJwt.ts` — `jwtVerify` has no `algorithms` option. JWKS contents currently make this unexploitable, but pin it: `algorithms: ["RS256"]`.
+~~`apps/api/src/middleware/authJwt.ts` — `jwtVerify` had no `algorithms` option.~~ Now pins `algorithms: ["RS256"]` in the `jwtVerify` options, so tokens claiming any other algorithm (HS256/`none` confusion) are rejected regardless of JWKS contents.
 
-## INFRA-009 — Dev ports on all interfaces with weak defaults — Low
+## INFRA-009 — Dev ports on all interfaces with weak defaults — ~~Low~~ **FIXED (2026-10-18)**
 
-`infrastructure/docker-compose.yml`: postgres (5433) and Keycloak (8081) bind `0.0.0.0` with documented default passwords. Fine locally; risky on shared/CI hosts.
-
-**Fix:** bind to loopback: `"127.0.0.1:5433:5432"`, `"127.0.0.1:${KEYCLOAK_PORT:-8081}:8080"`.
+~~`infrastructure/docker-compose.yml`: postgres, Keycloak, api and nginx published on all interfaces with documented default passwords.~~ All host-facing ports are now loopback-only (`127.0.0.1:*`): postgres 5433, Keycloak 8081, api 3000, nginx 8082. The stack remains fully usable locally; any LAN/shared-host exposure now requires an explicit, reviewed change.
 
 ## INFRA-010 — No dependency scanning in CI — Low
 

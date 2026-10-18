@@ -1,11 +1,16 @@
 import type { NextFunction, Request, Response } from "express";
 
 /**
- * Minimal fixed-window per-IP rate limiter for public endpoints (e.g. signup).
- * In-memory and single-instance by design — replace with a distributed limiter
- * when horizontally scaling (see TECH_DEBT.md).
+ * Minimal fixed-window rate limiter. In-memory and single-instance by design —
+ * replace with a distributed limiter when horizontally scaling (see TECH_DEBT.md).
+ *
+ * `key` customizes the bucket: the default is the client IP (public endpoints
+ * like signup); `tenantRateLimit` builds per-tenant buckets from the verified
+ * JWT. If `key` returns undefined the request is not throttled (e.g. no tenant).
  */
-export function rateLimit(options: { windowMs: number; max: number }): (req: Request, res: Response, next: NextFunction) => void {
+export function rateLimit(
+  options: { windowMs: number; max: number; key?: (req: Request) => string | undefined }
+): (req: Request, res: Response, next: NextFunction) => void {
   const hits = new Map<string, { count: number; resetAt: number }>();
 
   // Periodically drop expired entries so the map cannot grow unbounded.
@@ -17,7 +22,12 @@ export function rateLimit(options: { windowMs: number; max: number }): (req: Req
   }, options.windowMs).unref();
 
   return (req, res, next) => {
-    const key = req.ip ?? "unknown";
+    const key = options.key ? options.key(req) : (req.ip ?? "unknown");
+    // No bucket key (e.g. request without a tenant) → nothing to throttle.
+    if (!key) {
+      next();
+      return;
+    }
     const now = Date.now();
     let entry = hits.get(key);
 
@@ -33,4 +43,19 @@ export function rateLimit(options: { windowMs: number; max: number }): (req: Req
     }
     next();
   };
+}
+
+/**
+ * Per-tenant limiter (TICKET-105 / SEC-005): buckets by the verified
+ * `tenant_slug` claim so one tenant's traffic cannot starve another's, even
+ * when users share an IP (e.g. one office NAT). Requests without a tenant
+ * slug pass through — the JWT check already rejects them with 401.
+ */
+export function tenantRateLimit(
+  options: { windowMs: number; max: number }
+): (req: Request, res: Response, next: NextFunction) => void {
+  return rateLimit({
+    ...options,
+    key: (req) => req.auth?.tenantSlug
+  });
 }

@@ -27,7 +27,10 @@ export async function authJwt(req: Request, res: Response, next: NextFunction): 
   try {
     const { payload } = await jwtVerify(authorization.slice("Bearer ".length), JWKS, {
       issuer: env.JWT_ISSUER_URL,
-      audience: env.JWT_AUDIENCE
+      audience: env.JWT_AUDIENCE,
+      // SEC-007 (TICKET-106): hard-pin the algorithm. Without this, jose would
+      // accept any alg the token header claims (e.g. HS256/`none` confusion).
+      algorithms: ["RS256"]
     });
 
     req.auth = {

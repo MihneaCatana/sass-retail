@@ -13,7 +13,9 @@ services:
       POSTGRES_MIGRATE_PASSWORD: ${POSTGRES_MIGRATE_PASSWORD:-retail-migrate-dev-password}
     ports:
       # Host port 5432 is commonly taken by other local projects -> default 5433
-      - "${POSTGRES_HOST_PORT:-5433}:5432"
+      # Loopback-only (TICKET-107): Postgres must never be reachable from the
+      # LAN — the app talks to it over the internal compose network.
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5433}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
@@ -42,7 +44,9 @@ services:
       KC_PROXY_HEADERS: xforwarded
       KC_HOSTNAME_STRICT: "false"
     ports:
-      - "${KEYCLOAK_PORT:-8081}:8080"
+      # Loopback-only (TICKET-107): Keycloak's admin console is powerful; reach
+      # it from the host via localhost, browsers go through nginx at :8082.
+      - "127.0.0.1:${KEYCLOAK_PORT:-8081}:8080"
     volumes:
       - ./keycloak:/opt/keycloak/data/import:ro
     depends_on:
@@ -101,7 +105,9 @@ services:
       MIGRATIONS_DIR: /app/migrations
       CORS_ORIGIN: http://localhost:4200,http://localhost:8082
     ports:
-      - "3000:3000"
+      # Loopback-only (TICKET-107): direct API access is for local debugging;
+      # browsers go through nginx.
+      - "127.0.0.1:3000:3000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -133,7 +139,9 @@ services:
     container_name: retail-nginx
     ports:
       # Host port 80 is commonly taken by other local projects -> default 8082
-      - "${NGINX_PORT:-8082}:80"
+      # Loopback-only (TICKET-107): the dev stack should not be exposed to the
+      # LAN; production sits behind a TLS-terminating ingress instead.
+      - "127.0.0.1:${NGINX_PORT:-8082}:80"
     environment:
       # Injected into nginx templates (X-Forwarded-Port for Keycloak issuer)
       NGINX_PUBLIC_PORT: ${NGINX_PORT:-8082}

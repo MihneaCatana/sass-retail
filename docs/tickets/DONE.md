@@ -123,6 +123,65 @@ verified live in the local Docker stack; see `AGENT.md` for the full log.
 
 ---
 
+## TICKET-104 — Security headers + CSP on the SPA origin (INFRA-008)
+- **Type:** security · **Phase:** 6 · **Status:** done (2026-10-18)
+- **What:** Security headers enforced in `apps/web/nginx-spa.conf` — the
+  single enforcement point so every response carries exactly one set of
+  headers (duplicated CSP/X-Frame-Options at the outer layer make browsers
+  reject or intersect policies unpredictably). Applied: `nosniff`,
+  `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`,
+  CSP (`default-src 'self'; script-src 'self'; style-src 'self'
+  'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;
+  connect-src 'self'; object-src 'none'; base-uri 'self'; form-action
+  'self'; frame-ancestors 'none'`) with `always` so they apply to
+  SPA-fallback 404s. API responses keep helmet's equivalents.
+- **Considered:** HSTS deferred until TLS (TICKET-102); in-memory token
+  storage evaluated — the OIDC library defaults to sessionStorage (not
+  localStorage); in-memory migration deferred until the login flow can be
+  regression-tested in a real browser.
+- **Verified:** `pnpm -r typecheck` + lint + build clean; CSP tuned to the
+  Angular production build (external scripts, inline critical CSS, no
+  inline scripts). Live `curl -I` check pending Docker stack restart.
+
+## TICKET-105 — Bounded tenant cache + per-tenant rate limiting (SEC-005)
+- **Type:** security/quality · **Phase:** 6 · **Status:** done (2026-10-18)
+- **What:** `tenantStore.ts` rewritten: positive-lookups-only cache (misses
+  always hit the DB) with `CACHE_MAX_ENTRIES = 1_000` and LRU eviction
+  (recency refreshed on hit) — bounds memory at
+  min(active tenants, 1,000) entries. Generalized `rateLimit` to accept a
+  `key` function and added `tenantRateLimit` bucketing by the verified
+  `tenant_slug` claim; wired into `/api/me` and `/api/tenants`
+  (300 req/min/tenant).
+- **Verified:** new unit tests — `tenantStore.test.ts` (misses don't grow
+  the cache, non-active tenants uncached, LRU eviction at cap verified by
+  re-querying the oldest entry) and `rateLimit.test.ts` (per-tenant buckets
+  independent even from the same IP; requests without a tenant pass through).
+
+## TICKET-106 — JWT algorithm pinning (SEC-007)
+- **Type:** security · **Phase:** 6 · **Status:** done (2026-10-18)
+- **What:** Found the pin was NOT already present (contrary to the ticket's
+  assumption about TICKET-008) and implemented it: `jwtVerify` now pins
+  `algorithms: ["RS256"]`, so tokens claiming any other algorithm
+  (HS256/`none` confusion) are rejected regardless of JWKS contents.
+- **Verified:** `pnpm -r typecheck` + `pnpm lint` clean; pin confirmed in
+  `apps/api/src/middleware/authJwt.ts`.
+
+## TICKET-107 — Bind dev ports to loopback (INFRA-009)
+- **Type:** infrastructure · **Phase:** 6 · **Status:** done (2026-10-18)
+- **What:** All four host-published ports in `docker-compose.yml` bound to
+  `127.0.0.1` — postgres 5433, Keycloak 8081, api 3000, nginx 8082 — with
+  comments explaining each (Postgres must never be LAN-reachable; Keycloak
+  admin console reached via localhost; direct API access is debug-only; the
+  dev stack should not be exposed to the LAN).
+- **Verified:** `docker compose config` shows `host_ip: 127.0.0.1` on all
+  published ports; stack remains fully usable locally.
+
+---
+
+**Note (updated):** implementation through TICKET-015 was committed in
+`4080c2f`. TICKET-104..107 are implemented and verified, ready to commit.
+---
+
 **Note:** all of the above is implemented but not yet committed (repo shows
 only the initial commit). Commit per ticket with `TICKET-0xx:` prefixes
 before starting TICKET-101+.

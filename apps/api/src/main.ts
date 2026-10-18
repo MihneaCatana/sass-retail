@@ -7,6 +7,7 @@ import { logger } from "./shared/logger";
 import { pool } from "./db/pool";
 import { authJwt } from "./middleware/authJwt";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import { tenantRateLimit } from "./middleware/rateLimit";
 import { tenantContext } from "./middleware/tenantContext";
 import { healthRouter } from "./routes/health";
 import { meRouter } from "./routes/me";
@@ -29,9 +30,12 @@ export function createApp(): express.Express {
   app.use("/api/health", healthRouter);
   // Public (rate-limited) tenant signup — no auth.
   app.use("/api/onboarding", onboardingRouter);
-  // Authenticated routes.
-  app.use("/api/me", authJwt, meRouter);
-  app.use("/api/tenants", authJwt, tenantContext, tenantsRouter);
+  // Authenticated routes. The per-tenant limiter (TICKET-105 / SEC-005)
+  // buckets by the verified tenant_slug claim so one tenant cannot starve the
+  // others; requests without a tenant pass the limiter and 401 at authJwt.
+  const tenantApiRateLimit = tenantRateLimit({ windowMs: 60_000, max: 300 });
+  app.use("/api/me", authJwt, tenantApiRateLimit, meRouter);
+  app.use("/api/tenants", authJwt, tenantApiRateLimit, tenantContext, tenantsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
