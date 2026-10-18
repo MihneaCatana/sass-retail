@@ -1,6 +1,7 @@
 ﻿{
     "realm":  "retail",
     "displayName":  "sass-retail",
+    "loginTheme":  "retail",
     "enabled":  true,
     "registrationAllowed":  false,
     "loginWithEmailAllowed":  true,

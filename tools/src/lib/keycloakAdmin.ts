@@ -50,26 +50,40 @@ export async function ensureOnboardingClientSecret(secret: string): Promise<void
     throw new Error("retail-onboarding client not found in realm 'retail'");
   }
 
-  const secretUrl = `${env.KEYCLOAK_URL}/admin/realms/retail/clients/${client.id}/secret`;
-  const current = await fetch(secretUrl, { headers });
-  if (!current.ok) {
-    throw new Error(`Keycloak client secret lookup failed: ${current.status}`);
+  // Keycloak 26.1 dropped the /clients/{id}/secret subresource (GET and PUT
+  // return 404). The secret is read from and written through the FULL client
+  // representation instead — a partial PUT drops unspecified fields, so fetch
+  // the complete representation first.
+  const clientUrl = `${env.KEYCLOAK_URL}/admin/realms/retail/clients/${client.id}`;
+  const repRes = await fetch(clientUrl, { headers });
+  if (!repRes.ok) {
+    throw new Error(`Keycloak client fetch failed: ${repRes.status}`);
   }
-  const currentSecret = ((await current.json()) as { value?: string }).value;
-  if (currentSecret === secret) {
+  const rep = (await repRes.json()) as { secret?: string; publicClient?: boolean };
+
+  const needsSecret = rep.secret !== secret;
+  // Self-heal a stale realm where the client was imported as public (no secret
+  // exists) — the API authenticates with client_credentials, so the client
+  // must be confidential.
+  const needsConfidential = rep.publicClient === true;
+  if (!needsSecret && !needsConfidential) {
     console.log("retail-onboarding client secret already matches the environment.");
     return;
   }
 
-  const put = await fetch(secretUrl, {
+  const put = await fetch(clientUrl, {
     method: "PUT",
     headers,
-    body: JSON.stringify({ type: "secret", value: secret })
+    body: JSON.stringify({ ...rep, publicClient: false, secret })
   });
   if (!put.ok) {
     throw new Error(`Keycloak client secret update failed: ${put.status}`);
   }
-  console.log("retail-onboarding client secret set from the environment.");
+  console.log(
+    needsConfidential
+      ? "retail-onboarding client set confidential with the secret from the environment."
+      : "retail-onboarding client secret set from the environment."
+  );
 }
 
 /**
