@@ -45,6 +45,22 @@ async function main(): Promise<void> {
     expectCount(client, "SELECT value FROM app_settings WHERE key = $1", ["secret"], 1, "A sees its own secret")
   );
 
+  // ---- TICKET-101: tenant-scoped tables (products) follow the same rules ----
+  await withSchemaDb(a.schema, async (client) => {
+    await client.query(
+      "INSERT INTO products (name, sku, price_cents, stock) VALUES ($1, $2, $3, $4)",
+      ["A-only product", "ISO-A-1", 199, 5]
+    );
+  });
+
+  await withSchemaDb(b.schema, (client) =>
+    expectCount(client, "SELECT id FROM products", [], 0, "B sees no products of A (own table is empty)")
+  );
+
+  await withSchemaDb(a.schema, (client) =>
+    expectCount(client, "SELECT id FROM products WHERE sku = $1", ["ISO-A-1"], 1, "A sees its own product")
+  );
+
   // ---- DB-003 enforcement: the APP connect role (what the API connects as) ----
   const appPool = new Pool({
     host: env.POSTGRES_HOST,
@@ -83,6 +99,21 @@ async function main(): Promise<void> {
         const code = (err as { code?: string }).code;
         if (code !== "42501") throw err;
         console.log("ok: cross-tenant read blocked inside tenant role (permission denied)");
+      }
+
+      // The failed read above aborted the transaction - start a clean one
+      // for the products check (TICKET-101).
+      await client.query("ROLLBACK");
+      await client.query("BEGIN");
+      await client.query(`SET LOCAL search_path TO ${a.schema}, public`);
+      await client.query(`SET LOCAL ROLE ${a.schema}_app`);
+      try {
+        await client.query(`SELECT * FROM ${b.schema}.products`);
+        throw new Error("ISOLATION FAILURE: cross-tenant products read succeeded inside tenant role");
+      } catch (err) {
+        const code = (err as { code?: string }).code;
+        if (code !== "42501") throw err;
+        console.log("ok: cross-tenant products read blocked inside tenant role (permission denied)");
       }
       await client.query("COMMIT");
     } catch (err) {

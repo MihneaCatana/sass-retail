@@ -33,6 +33,11 @@ export class IdentityStore {
     return this.me.hasValue() && this.me.value().roles.includes('platform-admin');
   });
 
+  readonly isTenantAdmin = computed(() => {
+    // Reads for any tenant member; mutations are admin-only (TICKET-101).
+    return this.me.hasValue() && this.me.value().roles.includes('tenant-admin');
+  });
+
   readonly userName = computed(() => (this.me.hasValue() ? this.me.value().sub : ''));
 
   constructor() {

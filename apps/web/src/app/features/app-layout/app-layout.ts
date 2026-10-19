@@ -20,7 +20,10 @@ export class AppLayout {
   protected readonly identity = inject(IdentityStore);
 
   protected readonly navItems = computed<SidebarNavItem[]>(() => {
-    const items: SidebarNavItem[] = [{ label: 'Home', link: '/app/home' }];
+    const items: SidebarNavItem[] = [
+      { label: 'Home', link: '/app/home' },
+      { label: 'Products', link: '/app/products' }
+    ];
     if (this.identity.isPlatformAdmin()) {
       items.push({ label: 'All tenants', link: '/app/platform/tenants' });
     }

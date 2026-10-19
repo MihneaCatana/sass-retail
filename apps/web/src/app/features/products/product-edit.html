@@ -1,0 +1,43 @@
+<section class="card">
+  <a routerLink="/app/products" class="back">← Products</a>
+  <h1>{{ isEdit() ? 'Edit product' : 'New product' }}</h1>
+
+  @if (loading()) {
+    <p class="muted">Loading…</p>
+  } @else if (loadError(); as loadError) {
+    <p class="error" role="alert">{{ loadError }}</p>
+  } @else {
+    <form (submit)="onSubmit($event)">
+      <label>Name
+        <input type="text" id="product-name" [formField]="productForm.name" placeholder="Espresso beans 1kg" />
+        @if (productForm.name().touched() && productForm.name().errors().length > 0) {
+          <span class="hint error">{{ productForm.name().errors()[0].message }}</span>
+        }
+      </label>
+      <label>SKU
+        <input type="text" id="product-sku" [formField]="productForm.sku" placeholder="ESP-1KG" />
+        @if (productForm.sku().touched() && productForm.sku().errors().length > 0) {
+          <span class="hint error">{{ productForm.sku().errors()[0].message }}</span>
+        }
+      </label>
+      <label>Price
+        <input type="number" id="product-price" step="0.01" [formField]="productForm.price" />
+        @if (productForm.price().touched() && productForm.price().errors().length > 0) {
+          <span class="hint error">{{ productForm.price().errors()[0].message }}</span>
+        }
+      </label>
+      <label>Stock
+        <input type="number" id="product-stock" step="1" [formField]="productForm.stock" />
+        @if (productForm.stock().touched() && productForm.stock().errors().length > 0) {
+          <span class="hint error">{{ productForm.stock().errors()[0].message }}</span>
+        }
+      </label>
+      @if (error(); as serverError) {
+        <p class="error" role="alert">{{ serverError }}</p>
+      }
+      <button type="submit" [disabled]="productForm().invalid() || submitting()">
+        {{ submitting() ? 'Saving…' : (isEdit() ? 'Save changes' : 'Create product') }}
+      </button>
+    </form>
+  }
+</section>

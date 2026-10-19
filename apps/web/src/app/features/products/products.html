@@ -1,0 +1,78 @@
+<section class="card">
+  <div class="title-row">
+    <div>
+      <h1>Products</h1>
+      <p class="muted">The catalog for your workspace.</p>
+    </div>
+    @if (identity.isTenantAdmin()) {
+      <a routerLink="/app/products/new" class="button">New product</a>
+    }
+  </div>
+
+  <form class="search" (submit)="applySearch($event)">
+    <input
+      type="search"
+      [value]="search()"
+      (input)="onSearchInput($event)"
+      placeholder="Search by name…"
+      aria-label="Search products"
+    />
+    <button type="submit">Search</button>
+  </form>
+
+  @if (actionError(); as deleteError) {
+    <p class="error" role="alert">{{ deleteError }}</p>
+  }
+
+  @if (productsResource.error()) {
+    <p class="error" role="alert">Could not load products. Please try again.</p>
+  } @else if (productsResource.isLoading() && products().length === 0) {
+    <p class="muted">Loading products…</p>
+  } @else if (products().length === 0) {
+    <p class="muted">
+      @if (appliedSearch()) {
+        No products match your search.
+      } @else {
+        No products yet.
+      }
+    </p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">SKU</th>
+          <th scope="col">Price</th>
+          <th scope="col">Stock</th>
+          <th scope="col">Updated</th>
+          @if (identity.isTenantAdmin()) {
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of products(); track p.id) {
+          <tr>
+            <td>{{ p.name }}</td>
+            <td><code>{{ p.sku }}</code></td>
+            <td>{{ p.priceCents / 100 | number: '1.2-2' }}</td>
+            <td>{{ p.stock }}</td>
+            <td>{{ p.updatedAt | date: 'medium' }}</td>
+            @if (identity.isTenantAdmin()) {
+              <td class="row-actions">
+                <a [routerLink]="['/app/products', p.id, 'edit']">Edit</a>
+                <button type="button" class="danger" (click)="remove(p.id)" [disabled]="deleting()">Delete</button>
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="pager">
+      <button type="button" (click)="prevPage()" [disabled]="page() <= 1">Previous</button>
+      <span class="muted">Page {{ page() }} of {{ pageCount() }} — {{ total() }} product(s)</span>
+      <button type="button" (click)="nextPage()" [disabled]="page() >= pageCount()">Next</button>
+    </div>
+  }
+</section>

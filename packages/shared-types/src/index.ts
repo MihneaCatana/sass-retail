@@ -63,4 +63,25 @@ export interface TenantDetail {
   recentAuditEntries: TenantAuditEntry[];
 }
 
+/** A tenant-scoped product (TICKET-101): lives in the tenant's own schema. */
+export interface Product {
+  id: string;
+  name: string;
+  sku: string;
+  /** Price in minor units (cents) — never store float money. */
+  priceCents: number;
+  stock: number;
+  /** ISO 8601 timestamps. */
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Paginated product list response (`GET /api/products`). */
+export interface ProductPage {
+  products: Product[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 

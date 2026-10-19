@@ -19,6 +19,12 @@ export const routes: Routes = [
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'home' },
       { path: 'home', loadComponent: () => import('./features/home/home').then((m) => m.Home) },
+      { path: 'products', loadComponent: () => import('./features/products/products').then((m) => m.Products) },
+      { path: 'products/new', loadComponent: () => import('./features/products/product-edit').then((m) => m.ProductEdit) },
+      {
+        path: 'products/:id/edit',
+        loadComponent: () => import('./features/products/product-edit').then((m) => m.ProductEdit)
+      },
       {
         path: 'platform/tenants',
         canActivate: [platformAdminGuard],

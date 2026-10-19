@@ -9,6 +9,7 @@
     "configure:keycloak": "tsx scripts/configure-realm.ts",
     "verify:auth": "tsx scripts/verify-auth-flow.ts",
     "verify:onboarding": "tsx scripts/verify-onboarding.ts",
+    "verify:products": "tsx scripts/verify-products.ts",
     "test:isolation": "tsx scripts/test-isolation.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "build": "tsc -p tsconfig.json --noEmit",

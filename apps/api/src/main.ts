@@ -13,6 +13,7 @@ import { healthRouter } from "./routes/health";
 import { meRouter } from "./routes/me";
 import { onboardingRouter } from "./modules/onboarding/onboarding.routes";
 import { tenantsRouter, platformTenantsRouter } from "./modules/tenants/tenants.routes";
+import { productsRouter } from "./modules/products/products.routes";
 import { userRateLimit } from "./middleware/rateLimit";
 
 export function createApp(): express.Express {
@@ -36,6 +37,7 @@ export function createApp(): express.Express {
   // others; requests without a tenant pass the limiter and 401 at authJwt.
   const tenantApiRateLimit = tenantRateLimit({ windowMs: 60_000, max: 300 });
   app.use("/api/me", authJwt, tenantApiRateLimit, meRouter);
+  app.use("/api/products", authJwt, tenantApiRateLimit, tenantContext, productsRouter);
   app.use("/api/tenants", authJwt, tenantApiRateLimit, tenantContext, tenantsRouter);
   // Platform (cross-tenant) endpoints, outside the tenantContext middleware:
   // platform admins are not linked to any tenant. The role middleware enforces
