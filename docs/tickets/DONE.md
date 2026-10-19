@@ -176,6 +176,113 @@ verified live in the local Docker stack; see `AGENT.md` for the full log.
 - **Verified:** `docker compose config` shows `host_ip: 127.0.0.1` on all
   published ports; stack remains fully usable locally.
 
+## TICKET-111 — Platform-admin tenant registry view
+- **Type:** feature · **Phase:** 6 · **Status:** done (2026-10-19)
+- **What:** Platform admins can see every tenant created in the app.
+  - `GET /api/platform/tenants` (API): mounted outside `tenantContext`
+    (platform admins are tenantless by design), guarded by the new
+    `requireRole("platform-admin")` middleware, user-bucketed via
+    `userRateLimit` (by JWT `sub`, 300 req/min), and audit-logged
+    (`platform.tenants.listed`). Backed by `listAllTenants()` in
+    `tenantStore.ts` (read-only SELECT on `public.tenants` with the
+    DML-only `retail_app` role).
+  - `TenantSummary` DTO in `packages/shared-types` (single contract source).
+  - Angular: lazy-lightweight `/platform/tenants` page (standalone
+    `PlatformTenants` component) behind `authGuard` +
+    `platformAdminGuard` (new guard that verifies the role via `/api/me`);
+    a "View all tenants" link appears on the home card only for
+    platform admins. Table shows name, slug, plan, status badge and
+    created date, with loading/error/empty states and refresh.
+- **Verified:** API 31/31 unit tests (new: `listAllTenants` mapping +
+  empty registry, `requireRole` 401/403/allow, `userRateLimit` bucketing),
+  web 6/6 unit tests (component happy path + 403 role error),
+  `pnpm typecheck`, `pnpm lint`, `pnpm build` all clean.
+
+**Refactor note (2026-10-19):** the UI was modernized per the official
+`angular-developer` agent skill (installed in `.github/skills/`): manual
+subscribe+signal plumbing replaced with `httpResource`, the signup form
+migrated from ngModel to Signal Forms, `AuthService` moved to the `@Service`
+decorator, file names aligned with the v20+ suffixless/hyphenated style
+(`auth.ts`, `auth-guard.ts`, `role-guard.ts`, `auth-interceptor.ts`,
+`Tenants`), `/signup` + `/platform/tenants` lazy-loaded via `loadComponent`,
+shared DTOs (`Me`, `CurrentTenant`) moved to `@retail/shared-types`, and
+tests rewritten to the zoneless Act/Wait/Assert pattern. Initial web bundle:
+1.94 MB → ~403 kB (lazy `signup`/`tenants` chunks).
+
+**Template split (2026-10-19):** every component moved from inline
+`template:` strings to external `templateUrl` HTML files, following the
+skill's unified-filename rule (`tenants.ts` / `tenants.html` /
+`tenants.scss`): `app`, `signin`, `signup`, `tenants`. Verified live:
+typecheck, 7/7 web unit tests, lint, and production build all green.
+
+**Sidebar shell (2026-10-19):** fixed the bug where signed-in navigation
+did nothing — the `<router-outlet>` was only rendered for unauthenticated
+users, so authenticated pages had nowhere to render. The app is now a real
+shell: unauthenticated → bare outlet (sign-in/signup); authenticated →
+sidebar layout (`app-sidebar`, reusable, inputs + `signOut` output) with a
+routed content outlet. The old home card became the routed `Home` feature
+(`/home`, reads the new shared `IdentityStore` service holding the
+`me`/`tenant` httpResources); a `signedInGuard` redirects signed-in users
+from `/` to `/home`; the sidebar shows "All tenants" only for platform
+admins (nav highlighting via the reusable `NavItem` component); the tenants
+table now uses the reusable `StatusBadge`. Regression tests added:
+signed-in shell renders + navigating to `/platform/tenants` lists tenants
+(web suite now 9/9).
+
+**Sidebar restyle + auth-screen fix (2026-10-19):** sidebar redesigned as a
+full-height (`position: sticky; top: 0; height: 100vh`) white column with the
+app's existing visual language (white background, `#e5e7eb` borders,
+`#2563eb` active items and Sign out button, light hover states); collapses
+to a normal top block under 720px. Also fixed a visual regression on the
+sign-in screen: its centering/background came from the removed `.shell` in
+`app.scss` — `signin.scss` now carries its own `.shell` (identical to
+`signup.scss`) so both auth screens render identically.
+
+**Silent auth handoff (2026-10-19):** the OIDC callback lands back on the
+origin root, so for one tick the router was on `/` (with `?state=...`
+params) before the auth state resolved — flashing the sign-in card before
+the effect routed into `/app/home`. `IdentityStore` now exposes
+`isAuthCheckComplete` (resolves when the initial `checkAuth()` settles,
+regardless of outcome — a failed check never blocks the UI), and the
+sign-in page renders a neutral "Signing you in…" splash (with spinner,
+reduced-motion aware) instead of the card until then. Result: no content
+flash during the callback → app-zone handoff; the user goes straight from
+the splash to `/app/home` (or the restored deep link). Regression tests:
+post-login redirect (default + restored deep link) and the splash state
+(web suite 12/12).
+
+**Tenant detail page (2026-10-19):** platform admins can drill into a
+tenant from the registry list. API: `GET /api/platform/tenants/:slug`
+(`platformTenantsRouter`, `requireRole("platform-admin")`, audit-logged as
+`platform.tenant.viewed`) returns the registry entry regardless of status
+plus the tenant's most recent audit entries (matched via
+`details->>'slug'`, since `public.audit_log` carries no tenant column).
+`TenantSummary` gained `updatedAt`; `TenantAuditEntry`/`TenantDetail` DTOs
+live in `@retail/shared-types`. Web: route `/app/platform/tenants/:slug`
+(lazy) renders the new `TenantDetail` page — registry facts (slug, schema,
+plan, status badge, created/updated) and the audit table — with
+`withComponentInputBinding()` binding the route param to a signal input;
+list rows link into the detail page. Verified: API 35/35 unit tests
+(store detail + audit lookups), web 15/15 (component + route-param
+integration), typecheck/lint/build clean.
+
+**Keycloak login polish (2026-10-19, impeccable):** CSS-only refinement of
+the `retail` login theme against the real rendered `keycloak.v2` markup.
+Fixed: dark-token leak (the stock head script forces `pf-v5-theme-dark` for
+dark-preference users — palette reasserted, `color-scheme: light only`);
+disabled submit state (Faded Sky + `wait` cursor per DESIGN.md); inline
+validation copy (Ledger Red 0.85rem) and helper hints (Shelf Grey); font
+stack pinned to `system-ui` (PatternFly's stack can resolve to an installed
+Red Hat face); the card group now sits centered on the floor both axes like
+the SPA shell (`safe center` so short viewports degrade without clipping);
+input padding matched to the SPA metric (0.5rem x 0.75rem); checkbox
+`accent-color` and secondary/link button variants themed for the other auth
+pages (logout-confirm, reset-password). Verified: served CSS live from the
+mounted theme dir, login page renders 200.
+
+
+
+
 ---
 
 **Note (updated):** implementation through TICKET-015 was committed in

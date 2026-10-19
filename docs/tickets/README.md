@@ -31,5 +31,6 @@ reference points (also used in commit messages, e.g. `TICKET-101: ...`).
 | DB security hardening | done (TICKET-009) |
 | Onboarding flow | done (TICKET-010) |
 | CI / tests / reliability | done (TICKET-012, 013, 014) |
+| Platform admin console | done (TICKET-111) |
 | First business module | open (TICKET-101) |
 | Production hardening (Phase 6) | open (TICKET-102..110) |
