@@ -1,3 +1,15 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  font-family: system-ui, sans-serif;
+  background: #f5f6f8;
+  padding: 1rem;
+}
+
+/* margin:auto centers the card and degrades safely: when the card is taller
+   than the viewport the page scrolls normally instead of clipping the top
+   (grid place-items:center would clip it). */
+
 .card {
   background: #fff;
   border-radius: 12px;
@@ -45,6 +57,29 @@
   to { opacity: 1; transform: none; }
 }
 
+.splash {
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+
+  .spinner {
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 2px solid #d1d5db;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .card { animation: none; }
+  .spinner { animation: none; }
 }

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { of } from 'rxjs';
-import { AuthService } from './auth.service';
+import { AuthService } from './auth';
 
 describe('AuthService', () => {
   it('subscribes to logoff() — the cold observable never runs otherwise and logout silently does nothing', () => {

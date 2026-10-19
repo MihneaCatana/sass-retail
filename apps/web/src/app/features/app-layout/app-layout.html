@@ -1,0 +1,6 @@
+<div class="layout">
+  <app-sidebar [items]="navItems()" [userName]="identity.userName()" (signOut)="signOut()" />
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

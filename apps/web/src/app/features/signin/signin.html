@@ -1,0 +1,15 @@
+<main class="shell">
+  @if (showSignInCard()) {
+  <section class="card">
+    <h1>Sign in to your workspace</h1>
+    <p class="muted">You'll be taken to a secure page to enter your password.</p>
+    <button type="button" (click)="login()">Sign in</button>
+    <p class="muted footer-note">New here? <a routerLink="/signup">Create your workspace</a></p>
+  </section>
+} @else {
+    <section class="splash" role="status" aria-busy="true">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Signing you in…</span>
+    </section>
+  }
+</main>

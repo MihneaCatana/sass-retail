@@ -1,43 +1,18 @@
-.shell {
-  min-height: 100vh;
+.layout {
   display: grid;
+  grid-template-columns: 15rem 1fr;
+  min-height: 100vh;
   font-family: system-ui, sans-serif;
   background: #f5f6f8;
-  padding: 1rem;
 }
 
-/* margin:auto centers the card and degrades safely: when the card is taller
-   than the viewport the page scrolls normally instead of clipping the top
-   (grid place-items:center would clip it). */
-.card {
-  margin: auto;
-  width: 100%;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgb(0 0 0 / 8%);
-  padding: 2rem 2.5rem;
-  text-align: center;
-  max-width: 30rem;
+.content {
+  padding: 1.5rem;
+}
 
-  h1 { margin: 0 0 0.5rem; }
-
-  button {
-    margin-top: 1rem;
-    padding: 0.5rem 1.25rem;
-    border: none;
-    border-radius: 8px;
-    background: #2563eb;
-    color: #fff;
-    cursor: pointer;
-
-    &:hover { background: #1d4ed8; }
-
-    &:focus-visible {
-      outline: 2px solid #2563eb;
-      outline-offset: 2px;
-    }
+/* Sidebar stacks on top of the content on small screens. */
+@media (max-width: 720px) {
+  .layout {
+    grid-template-columns: 1fr;
   }
-
-  .muted { color: #6b7280; }
-  .error { color: #dc2626; }
 }

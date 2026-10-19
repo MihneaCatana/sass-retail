@@ -1,0 +1,52 @@
+<main class="shell">
+  @if (done(); as response) {
+    <section class="card">
+      <h1>Workspace created</h1>
+      <p>
+        <strong>{{ response.name }}</strong> is ready at
+        <span class="muted">{{ response.slug }}</span>.
+      </p>
+      <p>Sign in with <strong>{{ response.adminEmail }}</strong> and the password you chose.</p>
+      <a routerLink="/" class="button">Sign in</a>
+    </section>
+  } @else {
+    <section class="card">
+      <h1>Create your workspace</h1>
+      <form (submit)="onSubmit($event)">
+        <label>Company name
+          <input type="text" [formField]="signupForm.companyName" placeholder="Acme Retail" />
+          @if (signupForm.companyName().touched() && signupForm.companyName().errors().length > 0) {
+            <span class="hint error">{{ signupForm.companyName().errors()[0].message }}</span>
+          }
+        </label>
+        <label>Workspace address
+          <input type="text" [formField]="signupForm.slug" placeholder="acme-retail" />
+          <span class="hint">Lowercase letters, numbers and hyphens — starts with a letter.</span>
+          @if (signupForm.slug().touched() && signupForm.slug().errors().length > 0) {
+            <span class="hint error">{{ signupForm.slug().errors()[0].message }}</span>
+          }
+        </label>
+        <label>Admin email
+          <input type="email" [formField]="signupForm.adminEmail" placeholder="you@company.com" />
+          @if (signupForm.adminEmail().touched() && signupForm.adminEmail().errors().length > 0) {
+            <span class="hint error">{{ signupForm.adminEmail().errors()[0].message }}</span>
+          }
+        </label>
+        <label>Password
+          <input type="password" [formField]="signupForm.adminPassword" placeholder="••••••••" />
+          <span class="hint">At least 10 characters, with upper case, lower case and a number.</span>
+          @if (signupForm.adminPassword().touched() && signupForm.adminPassword().errors().length > 0) {
+            <span class="hint error">{{ signupForm.adminPassword().errors()[0].message }}</span>
+          }
+        </label>
+        @if (error(); as serverError) {
+          <p class="error" role="alert">{{ serverError }}</p>
+        }
+        <button type="submit" [disabled]="signupForm().invalid() || submitting()">
+          {{ submitting() ? 'Creating…' : 'Create workspace' }}
+        </button>
+      </form>
+      <p class="muted footer-note">Already have an account? <a routerLink="/">Sign in</a></p>
+    </section>
+  }
+</main>

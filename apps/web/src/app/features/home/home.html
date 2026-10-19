@@ -1,0 +1,27 @@
+<section class="card">
+  <h1>sass-retail</h1>
+  @if (identity.me.hasValue()) {
+    <p>
+      Signed in as <strong>{{ identity.me.value().sub }}</strong> — roles:
+      {{ identity.me.value().roles.join(', ') || 'none' }}
+    </p>
+  } @else if (identity.me.error()) {
+    <p class="error">Could not load identity.</p>
+  }
+  @if (identity.tenant.hasValue()) {
+    <p>
+      Tenant: <strong>{{ identity.tenant.value().name }}</strong>
+      <span class="muted">({{ identity.tenant.value().slug }})</span>
+    </p>
+  } @else if (identity.tenant.error()) {
+    <p class="error">
+      {{
+        identity.tenant.statusCode() === 403
+          ? 'Your account is not linked to a tenant yet.'
+          : 'Could not load tenant data.'
+      }}
+    </p>
+  } @else {
+    <p class="muted">Loading tenant…</p>
+  }
+</section>

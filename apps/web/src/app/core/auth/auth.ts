@@ -1,8 +1,10 @@
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
+import type { LoginResponse } from 'angular-auth-oidc-client';
+import type { Observable } from 'rxjs';
 
 /** Thin wrapper over the OIDC library — the only place that touches it directly. */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AuthService {
   private readonly oidcSecurityService = inject(OidcSecurityService);
 
@@ -10,8 +12,8 @@ export class AuthService {
   readonly userData$ = this.oidcSecurityService.userData$;
 
   /** Completes the OIDC callback handling on app start. */
-  checkAuth(): void {
-    this.oidcSecurityService.checkAuth().subscribe();
+  checkAuth(): Observable<LoginResponse> {
+    return this.oidcSecurityService.checkAuth();
   }
 
   login(): void {
