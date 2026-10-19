@@ -9,8 +9,7 @@ Multi-tenant SaaS for SMBs (retail domain). **Schema-per-tenant** PostgreSQL. Mo
 ## Stack
 
 - **Monorepo**: pnpm workspaces - `apps/api` (Express 5 + TS), `apps/web` (Angular), `packages/shared-types` (shared DTOs), `packages/env` (zod env), `packages/provisioning` (tenant lifecycle)
-- **DB**: PostgreSQL 16 - one schema per tenant (`t_<slug>`), platform tables in `public`
-- **DB**: PostgreSQL 16 - one schema per tenant (`t_<slug>`), platform tables in `public`; data access via the Drizzle query builder inside `withTenantDb` (migrations stay on node-pg-migrate)
+- **DB**: PostgreSQL 16 - one schema per tenant (`t_<slug>`), platform tables in `public`; data access via Drizzle - tenant-scoped queries bind Drizzle to the `withTenantDb` transaction client, public-schema reads/writes use a pool-level instance (`db/drizzle.ts`); migrations stay on node-pg-migrate
 - **IAM**: Keycloak (single realm `retail`; `tenant_slug` claim via protocol mapper + declarative user profile)
 - **Docker**: one image per app, **identical in dev and prod** - only env vars differ
 - **CI**: GitHub Actions - static (typecheck/lint/unit tests/build) + integration (docker stack + verification scripts)

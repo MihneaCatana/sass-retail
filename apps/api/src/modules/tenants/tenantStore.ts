@@ -1,5 +1,8 @@
-import { pool } from "../../db/pool";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { db } from "../../db/drizzle";
 import type { TenantAuditEntry, TenantSummary } from "@retail/shared-types";
+import { auditLog } from "../../shared/audit.schema";
+import { tenants } from "./tenants.schema";
 
 export interface TenantRecord {
   id: string;
@@ -8,20 +11,6 @@ export interface TenantRecord {
   name: string;
   status: string;
   plan: string;
-}
-
-interface TenantRow {
-  id: string;
-  slug: string;
-  schema_name: string;
-  name: string;
-  status: string;
-  plan: string;
-}
-
-interface TenantRegistryRow extends TenantRow {
-  created_at: string;
-  updated_at: string;
 }
 
 const CACHE_TTL_MS = 30_000;
@@ -35,14 +24,28 @@ const CACHE_MAX_ENTRIES = 1_000;
 /** Map iterates in insertion order; re-inserting on hit gives LRU behavior. */
 const cache = new Map<string, { value: TenantRecord; expiresAt: number }>();
 
-function mapRow(row: TenantRow): TenantRecord {
+function mapTenantRow(row: typeof tenants.$inferSelect): TenantRecord {
   return {
     id: row.id,
     slug: row.slug,
-    schemaName: row.schema_name,
+    schemaName: row.schemaName,
     name: row.name,
     status: row.status,
     plan: row.plan
+  };
+}
+
+function toSummary(row: typeof tenants.$inferSelect): TenantSummary {
+  return {
+    id: row.id,
+    slug: row.slug,
+    schemaName: row.schemaName,
+    name: row.name,
+    // Registry rows carry a CHECK constraint on status; narrowing is safe.
+    status: row.status as TenantSummary["status"],
+    plan: row.plan,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString()
   };
 }
 
@@ -56,16 +59,14 @@ export async function getActiveTenantBySlug(slug: string): Promise<TenantRecord 
     return cached.value;
   }
 
-  const result = await pool.query<TenantRow>(
-    `SELECT id, slug, schema_name, name, status, plan
-       FROM public.tenants
-      WHERE slug = $1 AND status = 'active'`,
-    [slug]
-  );
+  const [row] = await db
+    .select()
+    .from(tenants)
+    .where(and(eq(tenants.slug, slug), eq(tenants.status, "active")));
 
-  const tenant = result.rows.length > 0 ? mapRow(result.rows[0]) : null;
+  const tenant = row ? mapTenantRow(row) : null;
 
-  // SEC-005: cache only positive lookups — misses (unknown or non-active
+  // SEC-005: cache only positive lookups - misses (unknown or non-active
   // slugs) hit the DB every time instead of accumulating cache entries.
   if (tenant) {
     cache.set(slug, { value: tenant, expiresAt: Date.now() + CACHE_TTL_MS });
@@ -80,54 +81,14 @@ export async function getActiveTenantBySlug(slug: string): Promise<TenantRecord 
 
 /** Lists every tenant in the registry, oldest first (platform-admin view). */
 export async function listAllTenants(): Promise<TenantSummary[]> {
-  const result = await pool.query<TenantRegistryRow>(
-    `SELECT id, slug, schema_name, name, status, plan, created_at, updated_at
-       FROM public.tenants
-      ORDER BY created_at`
-  );
-  return result.rows.map((row) => ({
-    id: row.id,
-    slug: row.slug,
-    schemaName: row.schema_name,
-    name: row.name,
-    // Registry rows carry a CHECK constraint on status; narrowing is safe.
-    status: row.status as TenantSummary["status"],
-    plan: row.plan,
-    createdAt: new Date(row.created_at).toISOString(),
-    updatedAt: new Date(row.updated_at).toISOString()
-  }));
+  const rows = await db.select().from(tenants).orderBy(asc(tenants.createdAt));
+  return rows.map(toSummary);
 }
 
 /** Fetches a single registry tenant by slug regardless of status (platform-admin view). */
 export async function getTenantBySlug(slug: string): Promise<TenantSummary | null> {
-  const result = await pool.query<TenantRegistryRow>(
-    `SELECT id, slug, schema_name, name, status, plan, created_at, updated_at
-       FROM public.tenants
-      WHERE slug = $1`,
-    [slug]
-  );
-  const row = result.rows[0];
-  if (!row) {
-    return null;
-  }
-  return {
-    id: row.id,
-    slug: row.slug,
-    schemaName: row.schema_name,
-    name: row.name,
-    // Registry rows carry a CHECK constraint on status; narrowing is safe.
-    status: row.status as TenantSummary["status"],
-    plan: row.plan,
-    createdAt: new Date(row.created_at).toISOString(),
-    updatedAt: new Date(row.updated_at).toISOString()
-  };
-}
-
-interface AuditEntryRow {
-  occurred_at: Date;
-  actor: string;
-  action: string;
-  details: Record<string, unknown>;
+  const [row] = await db.select().from(tenants).where(eq(tenants.slug, slug));
+  return row ? toSummary(row) : null;
 }
 
 /**
@@ -136,19 +97,17 @@ interface AuditEntryRow {
  * so the lookup matches on `details->>'slug'`.
  */
 export async function getRecentAuditForTenant(slug: string, limit = 20): Promise<TenantAuditEntry[]> {
-  const result = await pool.query<AuditEntryRow>(
-    `SELECT occurred_at, actor, action, details
-       FROM public.audit_log
-      WHERE details->>'slug' = $1
-      ORDER BY occurred_at DESC
-      LIMIT $2`,
-    [slug, limit]
-  );
-  return result.rows.map((row) => ({
-    occurredAt: new Date(row.occurred_at).toISOString(),
+  const rows = await db
+    .select()
+    .from(auditLog)
+    .where(sql`${auditLog.details} ->> 'slug' = ${slug}`)
+    .orderBy(desc(auditLog.occurredAt))
+    .limit(limit);
+  return rows.map((row) => ({
+    occurredAt: row.occurredAt.toISOString(),
     actor: row.actor,
     action: row.action,
-    details: row.details
+    details: row.details as Record<string, unknown>
   }));
 }
 

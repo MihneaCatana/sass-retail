@@ -1,6 +1,7 @@
-import { pool } from "../db/pool";
+import { db } from "../db/drizzle";
 import { getTenantContext } from "../db/context";
 import { logger } from "./logger";
+import { auditLog } from "./audit.schema";
 
 /**
  * Append-only platform audit trail. Fire-and-forget: auditing must never
@@ -22,10 +23,7 @@ export async function audit(
   }
 
   try {
-    await pool.query(
-      `INSERT INTO public.audit_log (actor, action, details) VALUES ($1, $2, $3::jsonb)`,
-      [resolvedActor, action, JSON.stringify(details)]
-    );
+    await db.insert(auditLog).values({ actor: resolvedActor, action, details });
   } catch (err) {
     logger.error({ err, action }, "audit write failed");
   }
