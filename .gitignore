@@ -22,3 +22,6 @@ coverage/
 # OS
 Thumbs.db
 .DS_Store
+
+# Agent runtime artifacts (skills are vendored under .github/skills)
+.agents/
