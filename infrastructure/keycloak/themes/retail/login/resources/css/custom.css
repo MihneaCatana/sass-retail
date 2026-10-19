@@ -9,7 +9,7 @@
 
 /* ---- Browser surfaces ---- */
 html.login-pf {
-  color-scheme: light;
+  color-scheme: light only;
 }
 
 ::selection {
@@ -225,4 +225,109 @@ body#keycloak-bg {
   .pf-v5-c-login__main {
     animation: none;
   }
+}
+/* --- Polish pass (impeccable): center the card group on the floor, pin the type voice, theme the browser surfaces, and close the state gaps. --- */
+html.login-pf {
+  color-scheme: light only;
+}
+
+body#keycloak-bg {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-content: safe center;
+}
+
+.pf-v5-c-login {
+  width: 100%;
+  /* PatternFly's stack can resolve to an installed Red Hat face; the
+  system typography of the SPA is the law here. */
+  --pf-v5-global--font-family: system-ui, sans-serif;
+  font-family: system-ui, sans-serif;
+}
+
+.pf-v5-c-login__container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+#kc-header-wrapper.pf-v5-c-brand {
+  margin: 0;
+  padding: 0;
+  color: #111827;
+}
+
+.pf-v5-c-login .pf-v5-c-form-control {
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+}
+
+.pf-v5-c-login .pf-v5-c-form__helper-text,
+.pf-v5-c-login .pf-v5-c-helper-text {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.pf-v5-c-login .pf-m-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+}
+
+.pf-v5-c-login .pf-v5-c-alert {
+  margin: 0 0 1rem;
+}
+
+.pf-v5-c-login .pf-v5-c-button.pf-m-primary:disabled {
+  background-color: #93c5fd;
+  color: #ffffff;
+  cursor: wait;
+}
+
+.pf-v5-c-login .pf-v5-c-button.pf-m-secondary {
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 0.95rem;
+}
+
+.pf-v5-c-login .pf-v5-c-button.pf-m-secondary:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+.pf-v5-c-login .pf-v5-c-button.pf-m-link {
+  color: #2563eb;
+  font-size: 0.95rem;
+}
+
+.pf-v5-c-login .pf-v5-c-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.pf-v5-c-login input[type='checkbox'] {
+  accent-color: #2563eb;
+}
+
+.pf-v5-c-login .pf-v5-c-login__main-header-band {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+/* The stock head script adds pf-v5-theme-dark for dark-preference users.
+   This world is light-only: reassert the palette so dark component tokens
+   cannot leak through elements the rules above do not pin explicitly. */
+html.login-pf.pf-v5-theme-dark body#keycloak-bg {
+  background: #f5f6f8;
+  color: #111827;
 }
