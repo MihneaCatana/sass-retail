@@ -280,6 +280,33 @@ input padding matched to the SPA metric (0.5rem x 0.75rem); checkbox
 pages (logout-confirm, reset-password). Verified: served CSS live from the
 mounted theme dir, login page renders 200.
 
+## TICKET-101 — First business module: products (Phase 5)
+- **Type:** feature · **Phase:** 5 · **Status:** done (2026-10-19)
+- **What:** the reference tenant-scoped module that every future domain
+  module copies.
+  - Migration `0002_products` in `packages/provisioning/migrations/tenant/`
+    (id, name, unique sku, price_cents, stock, timestamps) — applied to
+    every tenant schema by `migrateAllTenants`; grants flow to the per-tenant
+    DML role via the existing default privileges.
+  - API `apps/api/src/modules/products/`: repository (every query through
+    `withTenantDb`, parameterized SQL, LIKE-escaped search), service
+    (zod validation, pagination clamped to 1..100, domain errors) and
+    routes mounted at `/api/products` behind `authJwt + tenantRateLimit +
+    tenantContext`. Reads for any tenant member; create/update/delete
+    gated to `tenant-admin` via `requireRole`. Duplicate SKU -> 409,
+    validation -> 400 with field errors, miss/malformed id -> 404.
+  - DTOs `Product` / `ProductPage` in `packages/shared-types`.
+  - Web `/app/products` (list with search + pagination, admin-only
+    New/Edit/Delete) and `/app/products/new` + `/app/products/:id/edit`
+    (Signal Forms; price entered in major units, stored as cents);
+    "Products" in the sidebar; `IdentityStore.isTenantAdmin`.
+- **Verified:** API 44/44 unit tests (service validation, clamping, error
+  mapping), web 22/22 (list, search, admin gating, delete, create/edit
+  forms), `test:isolation` extended and PASSED (B sees none of A's
+  products; cross-tenant products read denied 42501), and a new
+  `verify:products` e2e script PASSED live (signup -> full CRUD -> role
+  negatives -> cleanup). typecheck/lint/build clean.
+
 
 
 

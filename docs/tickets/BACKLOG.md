@@ -6,7 +6,7 @@ Actionable tickets for remaining work. Phase 6 items reference their
 ---
 
 ## TICKET-101 — First business module: products (Phase 5)
-- **Type:** feature · **Phase:** 5 · **Status:** open
+- **Type:** feature · **Phase:** 5 · **Status:** done (2026-10-19)
 - **Goal:** The reference implementation of a tenant-scoped domain module;
   all future modules copy this shape.
 - **Scope:**
@@ -22,6 +22,16 @@ Actionable tickets for remaining work. Phase 6 items reference their
   - `test:isolation` extended: tenant B cannot see/create/modify tenant A's
     products; app DB role still cannot touch foreign schemas.
   - Unit tests for service layer; `pnpm -r typecheck && pnpm lint` clean.
+- **Outcome:** delivered as the reference module — `products.repo.ts`
+  (withTenantDb, parameterized SQL), `products.service.ts` (zod validation,
+  pagination clamping, domain errors: 400/404/409), `products.routes.ts`
+  (reads for tenant members, mutations gated to `tenant-admin`);
+  `0002_products` tenant migration applied to every schema by
+  `migrateAllTenants`; web `/app/products` list (search + pagination) and
+  create/edit forms (Signal Forms, price entered in major units, stored as
+  cents); `test:isolation` extended (B sees none of A's products, cross-read
+  denied) and a new `verify:products` e2e script (full CRUD as a fresh
+  tenant admin + role negatives).
 
 ## TICKET-102 — Keycloak production mode + TLS (INFRA-002)
 - **Type:** infrastructure · **Phase:** 6 · **Status:** open
