@@ -1,0 +1,15 @@
+<aside class="sidebar">
+  <p class="brand">sass-retail</p>
+  <nav aria-label="Main navigation">
+    <p class="heading">{{ heading() }}</p>
+    @for (item of items(); track item.link) {
+      <app-nav-item [label]="item.label" [link]="item.link" />
+    }
+  </nav>
+  <div class="user-panel">
+    @if (userName()) {
+      <p class="user-name">{{ userName() }}</p>
+    }
+    <button type="button" (click)="signOut.emit()">Sign out</button>
+  </div>
+</aside>

@@ -1,0 +1,42 @@
+<section class="card">
+  <h1>All tenants</h1>
+  <p class="muted">Registry of every tenant workspace created in the platform.</p>
+
+  @if (tenants.error()) {
+    <p class="error" role="alert">{{ errorMessage() }}</p>
+  } @else if (tenants.isLoading() && tenantsList().length === 0) {
+    <p class="muted">Loading tenants…</p>
+  } @else if (tenantsList().length === 0) {
+    <p class="muted">No tenants have been created yet.</p>
+  } @else {
+    <table>
+      <caption class="muted">{{ tenantsList().length }} tenant(s)</caption>
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">Slug</th>
+          <th scope="col">Plan</th>
+          <th scope="col">Status</th>
+          <th scope="col">Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (tenant of tenantsList(); track tenant.id) {
+          <tr>
+            <td><a class="row-link" [routerLink]="['/app/platform/tenants', tenant.slug]">{{ tenant.name }}</a></td>
+            <td><code>{{ tenant.slug }}</code></td>
+            <td>{{ tenant.plan }}</td>
+            <td><app-status-badge [status]="tenant.status" /></td>
+            <td>{{ tenant.createdAt | date: 'medium' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  <div class="actions">
+    <button type="button" (click)="refresh()" [disabled]="tenants.isLoading()">
+      {{ tenants.isLoading() ? 'Refreshing…' : 'Refresh' }}
+    </button>
+  </div>
+</section>

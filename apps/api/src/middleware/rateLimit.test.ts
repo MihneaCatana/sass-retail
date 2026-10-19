@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Request, Response } from "express";
-import { rateLimit, tenantRateLimit } from "./rateLimit";
+import { rateLimit, tenantRateLimit, userRateLimit } from "./rateLimit";
+
 
 function mockReq(ip: string): Request {
   return { ip } as unknown as Request;
@@ -51,6 +52,42 @@ describe("rateLimit", () => {
 
     expect(next).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
+  });
+});
+
+describe("userRateLimit", () => {
+  function makeReq(ip: string, sub?: string): Request {
+    return {
+      ip,
+      auth: sub ? { sub, roles: ["platform-admin"] } : undefined
+    } as unknown as Request;
+  }
+
+  it("buckets by the verified user id, not by IP or tenant", () => {
+    const middleware = userRateLimit({ windowMs: 60_000, max: 2 });
+    const next = vi.fn();
+
+    // Two different users sharing an IP each get their own budget.
+    middleware(makeReq("1.1.1.1", "admin-1"), mockRes(), next);
+    middleware(makeReq("1.1.1.1", "admin-1"), mockRes(), next);
+    const res = mockRes();
+    middleware(makeReq("1.1.1.1", "admin-1"), res, next);
+    expect(res.status).toHaveBeenCalledWith(429);
+
+    middleware(makeReq("1.1.1.1", "admin-2"), mockRes(), next);
+    expect(next).toHaveBeenCalledTimes(3);
+  });
+
+  it("falls back to the client IP when the caller has no verified identity", () => {
+    const middleware = userRateLimit({ windowMs: 60_000, max: 1 });
+    const next = vi.fn();
+
+    middleware(makeReq("9.9.9.9"), mockRes(), next);
+    const res = mockRes();
+    middleware(makeReq("9.9.9.9"), res, next);
+
+    expect(res.status).toHaveBeenCalledWith(429);
+    expect(next).toHaveBeenCalledTimes(1);
   });
 });
 

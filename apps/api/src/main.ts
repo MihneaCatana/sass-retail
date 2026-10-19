@@ -12,7 +12,8 @@ import { tenantContext } from "./middleware/tenantContext";
 import { healthRouter } from "./routes/health";
 import { meRouter } from "./routes/me";
 import { onboardingRouter } from "./modules/onboarding/onboarding.routes";
-import { tenantsRouter } from "./modules/tenants/tenants.routes";
+import { tenantsRouter, platformTenantsRouter } from "./modules/tenants/tenants.routes";
+import { userRateLimit } from "./middleware/rateLimit";
 
 export function createApp(): express.Express {
   const app = express();
@@ -36,6 +37,15 @@ export function createApp(): express.Express {
   const tenantApiRateLimit = tenantRateLimit({ windowMs: 60_000, max: 300 });
   app.use("/api/me", authJwt, tenantApiRateLimit, meRouter);
   app.use("/api/tenants", authJwt, tenantApiRateLimit, tenantContext, tenantsRouter);
+  // Platform (cross-tenant) endpoints, outside the tenantContext middleware:
+  // platform admins are not linked to any tenant. The role middleware enforces
+  // platform-admin; the limiter buckets by the verified user id (TICKET-111).
+  app.use(
+    "/api/platform/tenants",
+    authJwt,
+    userRateLimit({ windowMs: 60_000, max: 300 }),
+    platformTenantsRouter
+  );
 
   app.use(notFoundHandler);
   app.use(errorHandler);

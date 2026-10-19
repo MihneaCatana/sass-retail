@@ -59,3 +59,17 @@ export function tenantRateLimit(
     key: (req) => req.auth?.tenantSlug
   });
 }
+
+/**
+ * Per-user limiter for authenticated endpoints outside any tenant context
+ * (e.g. platform-admin routes): buckets by the verified JWT `sub`, falling
+ * back to the client IP when the caller is unauthenticated.
+ */
+export function userRateLimit(
+  options: { windowMs: number; max: number }
+): (req: Request, res: Response, next: NextFunction) => void {
+  return rateLimit({
+    ...options,
+    key: (req) => req.auth?.sub ?? req.ip
+  });
+}
