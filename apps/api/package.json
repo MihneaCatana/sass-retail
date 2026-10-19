@@ -16,6 +16,7 @@
     "@retail/shared-types": "workspace:*",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.45.4",
     "express": "^5.0.1",
     "helmet": "^8.0.0",
     "jose": "^5.9.6",

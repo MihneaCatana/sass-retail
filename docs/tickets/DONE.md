@@ -306,6 +306,14 @@ mounted theme dir, login page renders 200.
   products; cross-tenant products read denied 42501), and a new
   `verify:products` e2e script PASSED live (signup -> full CRUD -> role
   negatives -> cleanup). typecheck/lint/build clean.
+  negatives -> cleanup). typecheck/lint/build clean.
+  - **Follow-up (2026-10-19):** the products repository now runs on the
+    Drizzle query builder inside `withTenantDb` (`products.schema.ts` +
+    `drizzle(client)` per transaction) - type-checked columns, camelCase
+    mapping, no hand-written SQL strings; the security architecture is
+    untouched. `pgErrorCode` walks wrapped error causes
+    (`DrizzleQueryError.cause`) so SKU conflicts still map to 409. Verified
+    live via `verify:products` (10/10).
 
 
 

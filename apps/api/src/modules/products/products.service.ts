@@ -54,9 +54,25 @@ export interface ProductListQuery {
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
+/**
+ * Extracts the PG error code from possibly-wrapped errors: Drizzle wraps the
+ * original pg error in a `DrizzleQueryError` whose `cause` carries `code`.
+ */
+function pgErrorCode(err: unknown): string | undefined {
+  let current: unknown = err;
+  for (let depth = 0; depth < 5 && current; depth += 1) {
+    const code = (current as { code?: string }).code;
+    if (typeof code === "string") {
+      return code;
+    }
+    current = (current as { cause?: unknown }).cause;
+  }
+  return undefined;
+}
+
 /** Wraps a low-level PG error as a domain conflict when the SKU unique index fires. */
 function mapRepoError(err: unknown): unknown {
-  if ((err as { code?: string }).code === "23505") {
+  if (pgErrorCode(err) === "23505") {
     return new SkuConflictError();
   }
   return err;
