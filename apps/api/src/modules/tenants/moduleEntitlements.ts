@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import { sql } from "drizzle-orm";
 import { WORKSPACE_MODULE_KEYS, type WorkspaceModuleKey } from "@retail/shared-types";
 import { db } from "../../db/drizzle";
+import { pool } from "../../db/pool";
 import { tenantModuleEntitlements } from "./moduleEntitlements.schema";
 
 const CACHE_TTL_MS = 10_000;
@@ -30,7 +30,13 @@ export async function getEnabledModules(tenantId: string): Promise<WorkspaceModu
 }
 
 export async function replaceTenantModules(tenantId: string, enabledModules: WorkspaceModuleKey[]): Promise<void> {
-  await db.execute(sql`SELECT public.set_tenant_module_entitlements(${tenantId}::uuid, ${enabledModules}::text[])`);
+  // node-postgres serializes JS arrays as PostgreSQL arrays. Drizzle's SQL
+  // interpolation expands arrays as row expressions, which cannot be cast to
+  // text[] by the entitlement function.
+  await pool.query(
+    "SELECT public.set_tenant_module_entitlements($1::uuid, $2::text[])",
+    [tenantId, enabledModules]
+  );
   cache.delete(tenantId);
 }
 
