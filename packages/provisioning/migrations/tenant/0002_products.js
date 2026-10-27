@@ -9,6 +9,8 @@ exports.up = (pgm) => {
       sku: { type: "text", notNull: true, unique: true },
       price_cents: { type: "integer", notNull: true },
       stock: { type: "integer", notNull: true, default: 0 },
+      unit_type: { type: "text", notNull: true, default: "unit" },
+      product_type: { type: "text", notNull: true, default: "endproduct" },
       created_at: { type: "timestamptz", notNull: true, default: pgm.func("now()") },
       updated_at: { type: "timestamptz", notNull: true, default: pgm.func("now()") }
     },

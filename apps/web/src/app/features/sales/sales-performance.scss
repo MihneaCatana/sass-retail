@@ -1,0 +1,56 @@
+:host { display: block; min-width: 0; }
+
+.performance-page { width: 100%; max-width: 75rem; min-width: 0; padding: clamp(1.2rem, 3vw, 2.5rem); border: 1px solid var(--sb-border); border-radius: 12px; background: #fff; color: var(--sb-ink); }
+.performance-page h1 { margin: 0 0 0.65rem; font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1.15; letter-spacing: -0.04em; }
+.performance-page h2 { margin: 0 0 1rem; font-size: 1.25rem; }
+.performance-page p { line-height: 1.5; }
+.performance-page .muted { color: var(--sb-muted); }
+.performance-page .notice { padding: 0.9rem 1rem; border-radius: 8px; background: var(--sb-background); color: var(--sb-muted); font-size: 0.85rem; line-height: 1.5; }
+.performance-page .page-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.performance-page .page-head > div { min-width: 0; }
+.performance-page .page-head h1 { margin-bottom: 0.4rem; }
+.performance-page .page-head p { max-width: 52rem; }
+.performance-page .page-head > div p { margin: 0; }
+.performance-page .period-note { margin: 1.25rem 0 1rem; }
+.performance-page .toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.performance-page .performance-filters { align-items: center; margin: 0; padding: 0.5rem 0 1.25rem; border-bottom: 1px solid var(--sb-border); }
+.performance-page .performance-filters mat-form-field { flex: 1 1 10rem; }
+.performance-page .performance-filters button { margin: 0 0 1.25rem; }
+.performance-page .error { color: var(--mat-sys-error); }
+
+.performance-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 1.5rem 0 1rem; }
+.performance-summary > div { display: grid; align-content: start; gap: 0.35rem; min-width: 0; padding: 0.15rem 1rem; border-left: 1px solid var(--sb-border); }
+.performance-summary > div:first-child { padding-left: 0; border-left: 0; }
+.performance-summary dt { color: var(--sb-muted); font-size: 0.82rem; line-height: 1.4; }
+.performance-summary dd { margin: 0; font-size: clamp(1.05rem, 1.7vw, 1.35rem); font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.performance-page .coverage-note { margin: 0; }
+
+.performance-section { margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--sb-border); }
+.performance-section h2 { margin: 0; }
+.performance-page .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.9rem; }
+.performance-page .section-heading a { flex: none; }
+.performance-product { color: var(--sb-primary); text-decoration: none; text-underline-offset: 0.15em; }
+.performance-product:hover { text-decoration: underline; }
+.performance-product:focus-visible { outline: 2px solid var(--sb-primary); outline-offset: 2px; border-radius: 2px; }
+.performance-page .product-sku { display: block; margin-top: 0.2rem; color: var(--sb-muted); font-size: 0.82rem; font-weight: 400; }
+.performance-page .empty-state { margin: 0; padding: 1rem 0; }
+.trend-section { margin-top: 2rem; }
+.trend-section > h2 { margin-bottom: 0.9rem; }
+
+@media (max-width: 900px) {
+  .performance-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 1rem; }
+  .performance-summary > div:nth-child(4) { padding-left: 0; border-left: 0; }
+}
+
+@media (max-width: 620px) {
+  .performance-page .page-head { align-items: stretch; }
+  .performance-page .page-head a { align-self: flex-start; }
+  .performance-page .performance-filters { align-items: stretch; gap: 0; }
+  .performance-page .performance-filters mat-form-field { width: 100%; }
+  .performance-page .performance-filters button { align-self: flex-start; margin: 0.25rem 0 0; min-height: 44px; }
+  .performance-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 0; }
+  .performance-summary > div { padding: 0 0.75rem; }
+  .performance-summary > div:nth-child(odd) { padding-left: 0; border-left: 0; }
+  .performance-summary > div:nth-child(4) { padding-left: 0.75rem; border-left: 1px solid var(--sb-border); }
+  .performance-page .section-heading { align-items: flex-start; }
+}

@@ -1,192 +1,357 @@
 ---
-name: sass-retail Web
-description: Bright, organized back-office UI for a multi-tenant retail SaaS — white cards on daylight-grey, one trust-blue voice.
+name: Storeboard Web
+description: Calm green workspaces for Romanian SMB owners and their teams.
 colors:
-  primary: "#2563eb"
-  primary-hover: "#1d4ed8"
-  primary-disabled: "#93c5fd"
-  page-bg: "#f5f6f8"
-  surface: "#ffffff"
-  text-strong: "#111827"
-  text-label: "#374151"
-  text-muted: "#6b7280"
-  border: "#d1d5db"
-  error: "#dc2626"
+  primary: "#163d36"
+  primary-hover: "#24564c"
+  on-primary: "#ffffff"
+  accent: "#d6f86a"
+  background: "#f7faf8"
+  surface: "#fcfdfd"
+  surface-white: "#ffffff"
+  surface-muted: "#edf4ef"
+  primary-container: "#dceee3"
+  ink: "#152333"
+  muted: "#526a60"
+  border: "#dce7e1"
+  outline: "#789488"
+  inverse-muted: "#bed5c9"
+  inverse-border: "#3d6055"
+  error: "#b42318"
+  success: "#27713c"
 typography:
   headline:
     fontFamily: "system-ui, sans-serif"
-    fontSize: "1.4rem"
+    fontSize: "clamp(1.8rem, 3vw, 2.6rem)"
     fontWeight: 700
-    lineHeight: 1.2
-    letterSpacing: "normal"
+    lineHeight: 1.15
+    letterSpacing: "-0.04em"
+  title:
+    fontFamily: "system-ui, sans-serif"
+    fontSize: "1.25rem"
+    fontWeight: 700
   body:
     fontFamily: "system-ui, sans-serif"
     fontSize: "0.95rem"
     fontWeight: 400
-    lineHeight: "normal"
-    letterSpacing: "normal"
+    lineHeight: 1.5
   label:
     fontFamily: "system-ui, sans-serif"
     fontSize: "0.85rem"
-    fontWeight: 400
+    fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: "normal"
 rounded:
   control: "8px"
-  card: "12px"
+  surface: "12px"
 spacing:
   xs: "0.25rem"
   sm: "0.5rem"
   md: "0.75rem"
-  lg: "1.25rem"
-  xl: "2rem"
-  2xl: "2.5rem"
+  lg: "1rem"
+  xl: "1.5rem"
+  section: "2.5rem"
 components:
-  card:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text-strong}"
-    rounded: "{rounded.card}"
-    padding: "2rem 2.5rem"
   button-primary:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.surface}"
+    textColor: "{colors.on-primary}"
     rounded: "{rounded.control}"
-    padding: "0.55rem 1.25rem"
   button-primary-hover:
     backgroundColor: "{colors.primary-hover}"
-  button-primary-disabled:
-    backgroundColor: "{colors.primary-disabled}"
-  button-primary-block:
+  button-secondary:
+    backgroundColor: "{colors.surface-white}"
+    textColor: "{colors.primary}"
+    rounded: "{rounded.control}"
+  field:
+    backgroundColor: "{colors.surface-white}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+  working-surface:
+    backgroundColor: "{colors.surface-white}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.surface}"
+    padding: "clamp(1.2rem, 3vw, 2.5rem)"
+  navigation:
     backgroundColor: "{colors.primary}"
-    textColor: "{colors.surface}"
+    textColor: "{colors.on-primary}"
+  navigation-active:
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.primary}"
     rounded: "{rounded.control}"
-    padding: "0.55rem 1.25rem"
-  input-text:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.text-strong}"
-    rounded: "{rounded.control}"
-    padding: "0.5rem 0.75rem"
+  status-active:
+    backgroundColor: "#dcfce7"
+    textColor: "#166534"
 ---
 
-# Design System: sass-retail Web
+# Design System: Storeboard Web
 
 ## Overview
 
-**Creative North Star: "The Well-Lit Stockroom"**
+Storeboard's approved identity is a calm, organized green workspace: a dark
+navigation frame, light working surfaces, restrained lime accents, and clear
+operational content. This refresh consolidates the accepted Storeboard extension
+and supersedes the obsolete blue-only, single-centered-card baseline.
 
-This is an organized-clarity system for a retail back office: a bright, evenly lit space where every item is findable and every state is visible. Pages are single-purpose — one centered white card on a quiet daylight-grey floor — with generous whitespace and no ornament. The look is intentionally modest: the incumbent UI is placeholder-grade utility, and this record documents that baseline faithfully rather than dressing it up.
+Optimize for owners and staff using the product between customer-facing tasks.
+Make the next action, current balance, validation feedback, and recovery path easy
+to find. Brand character comes from color, typography, spacing, and dependable
+behavior rather than decorative components.
 
-Density is low and language is plain. Color is almost entirely neutral; one blue speaks for every interactive intent (actions, links, focus). There is no motion vocabulary yet — state changes are instant, and the only affordance beyond color is the `wait` cursor on disabled submitting buttons.
+Key characteristics:
 
-**Key characteristics:**
+- Forest-green navigation and primary actions; lime for selected navigation.
+- Neutral working surfaces, thin dividers, and readable quantities.
+- Angular Material controls with app-specific shells and shared data components.
+- Romanian/English content and responsive, keyboard-accessible operation.
 
-- One card per page, centered both axes, 26rem wide
-- Card content left-aligned — the card is centered, its content is not
-- A single accent blue used for action, focus, and links
-- Soft 8px controls inside softer 12px cards
-- One ambient shadow per page, carried by the card only
-- Footer meta separated by a 1px hairline divider
-- One authored entrance moment — the card rises into place (reduced-motion respected)
-- The same system overlays the Keycloak login page (CSS-only theme over stock keycloak.v2 markup)
+The normative tokens above are evidenced by global styles and recurring component
+styles. This document also gives forward guidelines for composing those components;
+it does not certify that every existing screen already meets every guideline.
+Runtime tokens live in `src/styles.scss`. Preview extensions live in
+`../../.impeccable/design.json`. Do not create a second competing design document.
 
 ## Colors
 
-A near-monochrome neutral palette with one trustworthy blue accent; nothing saturated competes for attention.
-
 ### Primary
-- **Daylight Blue** (#2563eb): the single voice of interactivity — submit buttons, links, and the input focus ring all share it. Chosen for plain trustworthiness, not vibrancy.
-- **Deep Water Blue** (#1d4ed8): hover state of Daylight Blue on primary buttons; darker, never lighter, so hovering always signals "pressing in".
-- **Faded Sky Blue** (#93c5fd): disabled/pending primary buttons. The same blue drained of commitment while the workspace is created.
+
+Forest green carries primary actions, navigation, links, and focus on light
+surfaces. Use the deeper hover variant for authored buttons; use Material's
+semantic interaction states on Material controls. White is the inverse foreground.
+
+### Secondary
+
+Lime marks the active navigation destination and occasional emphasis already used
+in the workspace overview. It is not a universal button fill, an error color, or a
+substitute for a selected-state label. Use dark green text on lime.
 
 ### Neutral
-- **Stockroom Floor** (#f5f6f8): full-page background. Just off-white and cool, so white cards lift without a visible edge.
-- **White** (#ffffff): card surfaces and all button text on blue.
-- **Ink** (#111827): implied default text color (browser default on white); headings and input values.
-- **Slate Label** (#374151): form labels — one step softer than Ink so labels guide without shouting.
-- **Shelf Grey** (#6b7280): secondary/muted text — helper lines, footnotes, inactive hints.
-- **Wire Grey** (#d1d5db): input borders. The quietest border that still reads as a field.
 
-### Tertiary
-- **Ledger Red** (#dc2626): error text only — API failures and validation problems. Never used decoratively.
+Use the page background outside working surfaces; white/off-white for forms and
+tables; muted green-grey for secondary content; border for surface separators and
+outline for field boundaries. On the dark sidebar use inverse-muted text and
+inverse-border separators instead of light-surface muted colors.
 
-### Named Rules
-**The Single Voice Rule.** Daylight Blue is the only accent on any screen, shared by buttons, links, and focus rings. If a second hue appears for decoration, the system is broken.
+### Feedback
 
-**The Shadow-As-Structure Rule.** Shadow exists to lift the one working card off the Stockroom Floor — never as hover garnish or depth theater.
+Use error and success colors with an explicit message or status label. Existing
+active/suspended badges also use semantic green/red backgrounds. Color alone must
+never distinguish success, failure, reversal, or selection.
+
+**The Semantic Color Rule.** Reuse global `--sb-*` and `--mat-sys-*` roles in new
+styles. Adjust shared theme roles when a component needs a systematic change;
+do not target private Material DOM/classes.
+
+Known drift, not new design rules: the generated Material palette still originates
+from the prior blue seed; explicit green overrides supply the accepted primary
+roles. Some global selection styling, comments, and local literals retain older
+values. This documentation task does not regenerate the palette or change UI code.
 
 ## Typography
 
-**Body Font:** system-ui (native sans-serif stack)
-**Headline Font:** system-ui, bold (700) — same stack as body, differentiated by size and weight only
+Use the installed system UI sans-serif stack for operational screens. Page
+headings use the headline role; section and product headings use title; body and
+field labels use their corresponding roles. Tables commonly use compact body
+text (0.9rem) and secondary metadata (0.85rem).
 
-**Character:** Native and unbranded: the OS's own UI voice. Personality comes from scale restraint — a modest 1.4rem headline tops even page-level cards.
+Use one task-level h1 per routed working page and semantic h2 sections. Long
+Romanian labels and product names must wrap without clipping. Use tabular numerals
+for balances, deltas, prices, and aligned numeric columns. Monospace is appropriate
+for SKU/reference data where helpful, not as a general brand voice.
 
-### Hierarchy
-- **Headline** (1.4rem / 700): the single h1 per card — the task title ("Create your workspace").
-- **Body** (0.95rem / 400): paragraphs, form feedback, and button text (compact contexts drop to 0.85rem).
-- **Label** (0.85rem / 400): field labels, helper/muted text, error text — the smallest voice in the system.
+Auth promotional headings and dashboard titles have larger existing local scales;
+do not spread them into inventory forms. Existing decorative overlines, unusually
+tight tracking, and duplicated headings are not reusable prescriptions.
 
 ## Layout
 
-Centered single-column layouts. The page is a full-viewport grid that centers its card both vertically and horizontally, with 1rem breathing room so small viewports never touch the edges.
+The desktop app shell uses a navigation column (15rem) and a flexible
+`minmax(0, 1fr)` content column. The sidebar stays at the viewport top and fills
+the viewport height. Page padding is fluid (1rem to 2.5rem); working surfaces are
+left aligned and grow up to 75rem. Product metadata forms have a narrower maximum
+width (42rem). Do not center every operational page inside a 26rem auth card.
 
-- **Shell**: `min-height: 100vh; display: grid; padding: 1rem;` — the card centers itself with `margin: auto` (never `place-items: center`, which clips a card taller than the viewport and overflows the shell).
-- **Card widths**: 26rem on all current screens (sign-in, signup, confirmation states).
-- **Rhythm inside cards**: 0.75rem between form fields; 0.25rem between a label and its input (or its helper hint); 1.5rem above the primary action; 1.25rem + 1rem padding above the footer divider.
-- **Alignment**: cards center themselves; their content is left-aligned — title, helper, form, action, and footer read as one column. Footer meta (alternate paths) sits under a 1px hairline divider.
-- **Motion**: one authored moment per page — the card rises 6px into place over 240ms with an exponential ease-out (`cubic-bezier(0.16, 1, 0.3, 1)`); `prefers-reduced-motion` disables it entirely.
-- **No breakpoints yet** — the fixed max-width plus shell padding is the entire responsive strategy, adequate for the auth surfaces.
+Use tight spacing within related controls and more separation between sections.
+Working-surface padding is fluid (1.2rem to 2.5rem). A stock form uses two columns
+for action and quantity, with reason/helper copy spanning the row.
+
+Observed responsive boundaries:
+
+| Width | Composition |
+| --- | --- |
+| At or below 720px | Sidebar becomes a compact brand bar with hamburger disclosure |
+| At or below 620px | Stock summary/form/history stack; action rows and pagination wrap |
+| At or below 800px | Auth task precedes its supporting brand content |
+| At or below 900px | Workspace overview simplifies its feature grid |
+
+Mobile navigation is a disclosure, not a modal: open content stays in page flow,
+contains section links, language controls, and sign out. Hidden content must be
+absent from keyboard navigation. Selecting a section closes it; Escape closes and
+returns focus to the toggle. Use expanded state, translated accessible names, and
+a controls relationship. Desktop navigation remains visible without a toggle.
+
+For tables, scroll the table region horizontally when necessary; do not create
+page-level horizontal overflow or shrink text to fit. Test at 390px and 1440px,
+plus the user's actual viewport when relevant. Test 200% zoom and long content
+for changed components.
 
 ## Elevation & Depth
 
-Depth is two layers only: the Stockroom Floor (page) and the card above it.
+Operational surfaces use a hairline border and tonal separation, usually without
+a shadow. Avoid nested decorated cards for every group. A tinted inline form can
+group a reversal without introducing a second elevation layer.
 
-- **Card ambient** (`0 2px 12px rgb(0 0 0 / 8%)`): one soft, diffuse shadow per page, reserved for the working card. Its role is structural — it says "this is the surface you work in."
-- Nothing else casts shadow: no hover lifts, no nested shadows, no dropdowns yet. When new surfaces arrive, a shadow means a working layer, nothing less.
+Auth previews and the Keycloak login retain existing ambient shadows. They are
+surface-specific treatments, not a reason to add hover lifts to operational rows.
+Keep framework overlays at their native elevation.
+
+**The Working Surface Rule.** Group by task, separate by whitespace or a divider,
+and reserve a decorated surface for a real working boundary.
 
 ## Shapes
 
-Rounded everything, gently — a friendly stockroom, not a rounded-toy app.
+Controls use the established control radius; working surfaces use the surface
+radius. Separators are single-pixel hairlines. Existing pills are limited to
+compact language/status controls; do not make every action a pill.
 
-- **Cards**: 12px radius — the softest container edge in the system.
-- **Controls** (buttons, inputs): 8px radius — consistently softer than their container.
-- **Borders**: 1px solid Wire Grey on inputs; buttons and cards are borderless, carried by fill and shadow respectively.
-- **Focus**: 2px solid Daylight Blue outline with a transparent border — the focus ring replaces the border rather than sitting beside it.
+Focus must be visible on both backgrounds: primary outline on light surfaces and
+lime outline on dark navigation. Existing authored focus rings use 2px with
+2-3px offset. Standard controls retain Material focus behavior. Aim for at least
+44px touch targets on mobile while preserving readable text and spacing.
+
+Motion is optional, brief, and purposeful. Existing entrance easing is
+`cubic-bezier(0.16, 1, 0.3, 1)`; the sidebar disclosure needs no entrance animation.
+Respect reduced motion and keep essential content visible while it settles.
 
 ## Components
 
-Only components that exist are documented; no invented variants.
+### Library and reuse policy
 
-### Card
-The page's single working surface: white, 12px radius, 2rem × 2.5rem padding, left-aligned content, 26rem max-width, one ambient shadow, one entrance rise. Every screen is built around exactly one.
+Use Angular Material for new standard controls; reuse the shared app components
+before introducing variants. Hand-authored layout shells, navigation, ledger rows,
+language switcher, and status badge are established exceptions. Auth currently
+contains bespoke fields/buttons: preserve their behavior when refining them and
+migrate in a deliberate task rather than copying them into new feature forms.
 
-### Primary Button
-Daylight Blue fill, white text, 8px radius, 0.55rem × 1.25rem padding, weight 500, no border. In single-action cards it spans the full card width (block variant). Hover deepens to Deep Water Blue; disabled/pending fades to Faded Sky Blue with a `wait` cursor. The submitting state swaps the label text ("Creating…") rather than adding a spinner.
+| Pattern | Implementation/reference |
+| --- | --- |
+| Main action | `button matButton="filled"` |
+| Secondary action | `button matButton="outlined"` |
+| Inline action / cancel | `button matButton="text"` |
+| Icon-only toggle | `button matIconButton`, SVG, translated accessible name |
+| Text / numeric field | `mat-form-field appearance="outline"`, `mat-label`, `input matInput` |
+| Select | `select matNativeControl` inside a Material field |
+| Results table | `shared/components/data-table` plus `MatPaginator` |
+| Shell and navigation | `features/app-layout`, `shared/components/sidebar`, `nav-item` |
+| Language / status | `shared/components/language-switcher`, `status-badge` |
+| Stock workflow | `features/products/product-stock.*` |
+| Theme | `src/styles.scss` and `src/_theme-colors.scss` |
 
-### Text Input
-White field, 1px Wire Grey border, 8px radius, 0.5rem × 0.75rem padding, 0.95rem text. Label sits stacked above (0.85rem Slate Label) with an optional persistent helper hint; focus is the Daylight Blue ring replacing the border. Each field carries a concrete placeholder ("Acme Retail", "you@company.com").
+### Buttons and links
 
-### Hairline Divider
-A 1px Wire Grey rule that separates footer meta (alternate paths like "New here?") from the main content above — the quietest separation that still reads as a group boundary.
+Prefer one primary action per task region, such as Save movement. Use outlined
+actions for secondary tasks and text actions for Cancel/Refresh. Navigation uses
+links; submissions and state changes use buttons. Default non-submit form buttons
+to `type="button"`. Icon-only controls require a translated accessible name.
 
-### Link
-Daylight Blue, no underline by default, embedded in muted helper text ("New here? Create your workspace"). Link and primary button share the same blue — same action voice.
+Keep labels specific to the operation. While submitting, prevent duplicate
+activation, use a localized progress label, and preserve focus and input on
+failure. Do not communicate pending state using opacity alone. Destructive or
+reversal actions need clear consequences and a deliberate confirmation flow;
+the ledger's inline reason/confirmation form is the current reversal pattern.
 
-### Muted & Error Text
-Shelf Grey at 0.85rem for helper lines and confirmations; Ledger Red at 0.85rem for errors, always inside the card near the action it explains, announced via `role="alert"`.
+### Fields, validation, and selectors
 
-### Keycloak Login Pages
-The stock `keycloak.v2` login markup is overlaid CSS-only with these exact tokens (see `infrastructure/keycloak/themes/retail/login/resources/css/custom.css`): Stockroom Floor shell, wordmark row above the card, the same card/title/input/button/alert treatment, blue caret and themed autofill. Verb case matches the SPA ("Sign in"); headings are task-focused ("Sign in to your workspace").
+Labels remain visible after entry; placeholders never replace them. Show units in
+the quantity label and explain allowed precision near the control. Price uses RON
+and locale-aware formatting; quantities distinguish whole pieces from measured
+units and services from tracked inventory. Do not silently round business data.
+
+Use existing Signal Forms patterns. Native selects remain the established
+interop choice; verify any replacement before adopting it. Existing validation
+uses explicit helper/error spans: associate feedback with its input through
+`aria-describedby` and invalid state when extending forms. Do not assume
+`mat-error` automatically understands Signal Forms in this version.
+
+Provide default, hover, focus, invalid, disabled/read-only, and submitting states
+where applicable. Read-only stock must look like a current balance, not a field
+that promises direct editing.
+
+### Working surfaces and page headers
+
+Start with the task title, a short relevant description, and the primary action.
+Keep headers flexible for long names and translated actions. Sections within a
+surface use spacing and dividers; do not introduce a card for each label/value.
+Metadata editing and stock-changing actions stay visibly distinct.
+
+### Tables, search, and pagination
+
+Use semantic table headers. Align quantities/prices right, labels left; keep
+units attached to quantities. Text can wrap; only compact identifiers and dates
+need deliberate non-wrapping. Preserve row actions on mobile via table-region
+scrolling or a purposeful stacked representation.
+
+Keep search wording accurate to the backend's actual search fields. Distinguish
+loading, empty catalog, no search matches, and load failure with retry. Pagination
+must use the active language, current server total, disabled bounds, and a visible
+loading state when changing pages. Never present a partial page as the full stock.
+
+### Stock summary and movement history
+
+Show product name, SKU, balance plus unit, and stock applicability. A service
+displays a localized not-tracked value rather than an invented inventory balance.
+The movement form places action and quantity before reason and submit.
+
+A history row carries movement kind, localized time, actor, signed delta, before/
+after balance, reason, and reversal status/reference where relevant. Use tabular
+numerals and explicit signs; color supplements meaning. Wrap reasons and long
+references. Keep the mobile reading order coherent when columns stack.
+
+Reversal is a distinct action with reason and confirmation. Do not imply that
+the original entry is deleted. API business errors must explain recovery in the
+active language without exposing internal stack traces or implying a failed
+operation succeeded. System-origin records are labeled as system activity.
+
+### Feedback, empty states, and permissions
+
+Use nearby inline feedback. Errors use `role="alert"`; non-urgent saved
+confirmations use `role="status"`. Loading must settle into data, an empty state,
+or an actionable error. Hide unavailable mutation controls for read-only users,
+while preserving discoverable read/history flows; server authorization remains
+the enforcement layer.
+
+An empty state explains what is missing and offers an appropriate permitted next
+action. A no-results state offers search recovery. Never turn a network error into
+an empty-state claim.
+
+### Language switcher, status badges, and browser surfaces
+
+Preserve EN/RO selection semantics, persistence, and translated accessibility
+labels. Every new user-facing string, hint, error, and accessible name belongs in
+`core/i18n/translations.ts`. User-authored names and SKUs are not translated.
+Use Romanian diacritics and active-locale number formatting. Display calendar
+dates as `dd/MM/yyyy` and timestamps as `dd/MM/yyyy HH:mm` in
+`Europe/Bucharest`. Keep date input values in ISO `yyyy-MM-dd` form.
+
+Badges carry a textual state and a semantic tone; do not style them as buttons
+unless interactive. Maintain contrast (4.5:1 for normal text, 3:1 for large text).
+Selection, caret, autofill, focus, and scrollbars should match the shared palette.
 
 ## Do's and Don'ts
 
-**Do** reuse the one card + one blue voice for every new screen until a real second component proves necessary.
-**Do** keep all sizing in the existing rem scale (0.25–2.5rem steps) and radii at 8px/12px.
-**Do** show state through the established channels: disabled fill for pending, Ledger Red text for failure, swapped label text for progress.
-**Do** theme the browser surfaces (selection, caret, autofill, focus rings) from the palette on every new surface — they are part of the design, not leftovers.
-**Don't** add a second accent hue, a webfont, or a hover shadow — the Single Voice and Shadow-As-Structure Rules forbid all three.
-**Don't** invent elevation layers, gradients, or a second motion moment; the entrance rise is the page's one authored movement.
-**Don't** exceed the 26rem card width or stack a second card on a page without revisiting this document first.
+### Do
+
+- Do reuse semantic tokens and established Material/shared component APIs.
+- Do prioritize the operator's next task, current state, and recovery path.
+- Do show quantities with units and prices with their currency context.
+- Do verify mobile, keyboard, translated content, and async failure states.
+- Do distinguish observed implementation from forward guidance and known drift.
+
+### Don't
+
+- Don't restore the superseded blue-only theme or fixed-width auth layout.
+- Don't clone bespoke controls or override private Material implementation classes.
+- Don't hide essential meaning in color, hover, an icon, or a tooltip alone.
+- Don't round stock for visual convenience or present services as physical stock.
+- Don't treat old literals, decorative overlines, or existing accessibility gaps as reusable rules.
 
 
 

@@ -2,22 +2,27 @@
   display: block;
   padding: 0.55rem 0.9rem;
   border-radius: 8px;
-  color: #374151;
+  color: #36534a;
   text-decoration: none;
   font-size: 0.95rem;
 
   &:hover {
-    background: #f3f4f6;
-    color: #111827;
+    background: #edf4ef;
+    color: #152333;
   }
 
   &:focus-visible {
-    outline: 2px solid #2563eb;
+    outline: 2px solid #163d36;
     outline-offset: 2px;
   }
 
   &.active {
-    background: #2563eb;
+    background: #163d36;
     color: #fff;
   }
 }
+
+.nav-item { padding: 0.8rem 0.9rem; color: #d4e4dc; font-size: 0.9rem; font-weight: 550; }
+.nav-item:hover { background: #24564c; color: #ffffff; }
+.nav-item.active { background: #d6f86a; color: #163d36; }
+.nav-item:focus-visible { outline-color: #d6f86a; }

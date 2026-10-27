@@ -1,0 +1,4 @@
+interface:
+  display_name: "Storeboard Designer"
+  short_description: "Design consistent Storeboard screens and components"
+  default_prompt: "Use $storeboard-designer to design or refine this Storeboard screen using apps/web/DESIGN.md, including mobile behavior, English/Romanian content, and interaction states."

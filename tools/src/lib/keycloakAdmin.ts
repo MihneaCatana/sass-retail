@@ -27,6 +27,31 @@ async function getBootstrapAdminToken(): Promise<string> {
   return body.access_token;
 }
 
+/** Keycloak 25+ supplies the access-token subject via the built-in basic
+ * scope. Attach it without rewriting the client or touching users/sessions. */
+export async function ensureWebClientSubject(): Promise<void> {
+  const token = await getBootstrapAdminToken();
+  const headers = { Authorization: `Bearer ${token}` };
+  const clientsResponse = await fetch(`${env.KEYCLOAK_URL}/admin/realms/retail/clients?clientId=retail-web`, { headers });
+  const scopesResponse = await fetch(`${env.KEYCLOAK_URL}/admin/realms/retail/client-scopes`, { headers });
+  if (!clientsResponse.ok || !scopesResponse.ok) throw new Error('Could not inspect web client subject configuration');
+  const clients = await clientsResponse.json() as Array<{ id: string; clientId: string }>;
+  const scopes = await scopesResponse.json() as Array<{ id: string; name: string }>;
+  const client = clients.find((c) => c.clientId === 'retail-web');
+  const basic = scopes.find((s) => s.name === 'basic');
+  if (!client || !basic) throw new Error('retail-web client or built-in basic scope missing; no configuration changed');
+  const url = `${env.KEYCLOAK_URL}/admin/realms/retail/clients/${client.id}/default-client-scopes`;
+  const currentResponse = await fetch(url, { headers });
+  if (!currentResponse.ok) throw new Error('Could not inspect existing web client scopes');
+  const current = await currentResponse.json() as Array<{ id: string }>;
+  if (current.some((scope) => scope.id === basic.id)) {
+    console.log('Web client already has the basic subject scope.'); return;
+  }
+  const attached = await fetch(`${url}/${basic.id}`, { method: 'PUT', headers });
+  if (!attached.ok) throw new Error(`Could not attach basic subject scope: ${attached.status}`);
+  console.log('Attached the basic subject scope to retail-web. Existing users and sessions were preserved.');
+}
+
 /**
  * TICKET-103 (SEC-004): the realm export ships WITHOUT client secrets — they
  * must never live in the repo. Keycloak auto-generates a secret for a

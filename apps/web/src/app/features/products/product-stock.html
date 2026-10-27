@@ -1,0 +1,75 @@
+<section class="stock-page" [class.embedded]="embedded()">
+  @if (!embedded()) {
+    <a routerLink="/app/products" class="back">{{ i18n.t('productEdit.back') }}</a>
+    <h1>{{ i18n.t('inventory.title') }}</h1>
+  }
+  @if (product.error()) {
+    <p role="alert" class="error">{{ i18n.t('productEdit.error.loadFailed') }}</p>
+    <button matButton="outlined" (click)="refresh()">{{ i18n.t('common.refresh') }}</button>
+  } @else if (!product.hasValue()) {
+    <p>{{ i18n.t('productEdit.loading') }}</p>
+  } @else {
+    @if (!embedded()) {
+      <header class="product-summary">
+        <div><h2>{{ product.value().name }}</h2><p>{{ product.value().sku }}</p></div>
+        <div class="balance"><span>{{ i18n.t('inventory.balance') }}</span>
+          <strong>@if (product.value().productType === 'service') { {{ i18n.t('inventory.untracked') }} } @else { {{ product.value().stock | number:'1.0-3':i18n.lang() }} {{ unitLabel(product.value().unitType) }} }</strong>
+        </div>
+      </header>
+    } @else {
+      <div class="balance"><span>{{ i18n.t('inventory.balance') }}</span>
+        <strong>@if (product.value().productType === 'service') { {{ i18n.t('inventory.untracked') }} } @else { {{ product.value().stock | number:'1.0-3':i18n.lang() }} {{ unitLabel(product.value().unitType) }} }</strong>
+      </div>
+    }
+    @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+    @if (success()) { <p class="success" role="status">{{ i18n.t('inventory.saved') }}</p> }
+    @if (identity.isTenantAdmin() && product.value().productType !== 'service') {
+      <form class="movement-form" (submit)="save($event)">
+        <mat-form-field appearance="outline"><mat-label>{{ i18n.t('inventory.action') }}</mat-label>
+          <select matNativeControl [formField]="movementForm.kind">@for (kind of kinds; track kind) { <option [value]="kind">{{ i18n.t(kindKey(kind)) }}</option> }</select>
+        </mat-form-field>
+        <mat-form-field appearance="outline"><mat-label>{{ i18n.t('inventory.quantity') }} ({{ unitLabel(product.value().unitType) }})</mat-label>
+          <input matInput inputmode="decimal" [formField]="movementForm.quantity" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="reason"><mat-label>{{ i18n.t('inventory.reason') }}</mat-label>
+          <input matInput [formField]="movementForm.reason" />
+        </mat-form-field>
+        <p class="form-hint">{{ i18n.t('inventory.openingHint') }} {{ i18n.t('inventory.adjustHint') }} {{ i18n.t('inventory.reasonHint') }}</p>
+        <button matButton="filled" type="submit" [disabled]="busy() || movementForm().invalid()">{{ i18n.t(busy() ? 'productEdit.saving' : 'inventory.save') }}</button>
+      </form>
+    }
+    <details class="history-disclosure" open>
+      <summary class="history-heading"><h2>{{ i18n.t('inventory.history') }}</h2></summary>
+      <div class="history-content">
+        <button matButton="text" (click)="refresh()" [disabled]="history.isLoading()">{{ i18n.t('common.refresh') }}</button>
+        @if (history.error()) { <p class="error" role="alert">{{ i18n.t('products.loadError') }}</p> }
+        @else if (!history.hasValue()) { <p>{{ i18n.t('productEdit.loading') }}</p> }
+        @else if (history.value().movements.length === 0) { <p>{{ i18n.t('inventory.empty') }}</p> }
+        @else {
+          <div class="history-list">
+          @for (m of history.value().movements; track m.id) {
+            <article class="movement">
+              <div><strong>{{ i18n.t(kindKey(m.kind)) }}</strong><p>{{ dateTime(m.createdAt) }}</p><p>{{ i18n.t('inventory.actor') }}: {{ m.actor.startsWith('system:') ? i18n.t('inventory.system') : m.actor }}</p></div>
+              <div class="quantities"><strong>{{ m.delta > 0 ? '+' : '' }}{{ m.delta | number:'1.0-3':i18n.lang() }} {{ unitLabel(m.unitType) }}</strong><p>{{ i18n.t('inventory.beforeAfter') }}: {{ m.before | number:'1.0-3':i18n.lang() }} → {{ m.after | number:'1.0-3':i18n.lang() }}</p></div>
+              <p class="movement-reason">{{ reason(m) }}</p>
+              @if (m.saleId) { <a matButton="text" [routerLink]="['/app/sales',m.saleId]">{{i18n.t('sales.openSale')}}</a> }
+              @if (m.reversalOf) { <small class="reference">{{ i18n.t('inventory.reverse') }}: {{ m.reversalOf }}</small> }
+              @if (m.reversed) { <span class="reversed">{{ i18n.t('inventory.reversed') }}</span> }
+              @else if (canReverse(m)) { <button matButton="text" (click)="startReverse(m.id)" [disabled]="busy()">{{ i18n.t('inventory.reverse') }}</button> }
+              @if (reversing() === m.id) {
+                <form class="reversal-form" (submit)="reverse($event)">
+                  <mat-form-field appearance="outline"><mat-label>{{ i18n.t('inventory.reason') }}</mat-label><input matInput [formField]="reverseForm.reason" /></mat-form-field>
+                  <p>{{ i18n.t('inventory.reasonHint') }}</p>
+                  <button matButton="filled" [disabled]="busy() || reverseForm().invalid()">{{ i18n.t('inventory.confirmReverse') }}</button>
+                  <button matButton="text" type="button" (click)="reversing.set('')" [disabled]="busy()">{{ i18n.t('inventory.cancel') }}</button>
+                </form>
+              }
+            </article>
+          }
+          </div>
+          <footer class="pager"><button matButton="outlined" (click)="page.set(page() - 1)" [disabled]="page() === 1 || history.isLoading()">{{ i18n.t('common.previous') }}</button><span>{{ i18n.t('inventory.page', {page: page(), count: history.value().total}) }}</span><button matButton="outlined" (click)="page.set(page() + 1)" [disabled]="!canNext() || history.isLoading()">{{ i18n.t('common.next') }}</button></footer>
+        }
+      </div>
+    </details>
+  }
+</section>

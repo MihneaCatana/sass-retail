@@ -1,17 +1,20 @@
 import { Component, computed, effect, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { I18nService } from '../../core/i18n/i18n';
+import { LanguageSwitcher } from '../../shared/components/language-switcher/language-switcher';
 import { AuthService } from '../../core/auth/auth';
 import { IdentityStore } from '../../core/identity/identity-store';
 import { RETURN_URL_KEY } from '../../core/auth/auth-guard';
 
 @Component({
   selector: 'app-signin',
-  imports: [RouterLink],
+  imports: [RouterLink, LanguageSwitcher],
   templateUrl: './signin.html',
   styleUrl: './signin.scss'
 })
 export class SignIn {
   private readonly auth = inject(AuthService);
+  protected readonly i18n = inject(I18nService);
   private readonly router = inject(Router);
   private readonly identity = inject(IdentityStore);
 
@@ -27,7 +30,9 @@ export class SignIn {
     // send the user into the /app zone as soon as the session is established,
     // restoring the URL they originally requested if one was saved.
     effect(() => {
-      if (this.identity.isAuthenticated()) {
+      // The library publishes authentication before callback processing has
+      // finished. Navigating at that point can race its callback URL cleanup.
+      if (this.identity.isAuthCheckComplete() && this.identity.isAuthenticated()) {
         const returnUrl = sessionStorage.getItem(RETURN_URL_KEY);
         sessionStorage.removeItem(RETURN_URL_KEY);
         // Only internal app-zone URLs are honoured (sessionStorage is

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Product } from "@retail/shared-types";
+import { parseQuantityText, quantityToMillis, type Product } from "@retail/shared-types";
 import {
   createProductsService,
   ProductNotFoundError,
@@ -14,6 +14,8 @@ const product: Product = {
   sku: "ESP-1KG",
   priceCents: 1899,
   stock: 25,
+  unitType: "kg",
+  productType: "endproduct",
   createdAt: "2026-01-01T10:00:00.000Z",
   updatedAt: "2026-01-01T10:00:00.000Z"
 };
@@ -25,11 +27,54 @@ function makeRepo(overrides: Partial<ProductsRepo> = {}) {
     create: vi.fn().mockResolvedValue(product),
     update: vi.fn().mockResolvedValue(product),
     remove: vi.fn().mockResolvedValue(true),
+    movements: vi.fn().mockResolvedValue({ movements: [], total: 0 }),
+    move: vi.fn(),
+    reverse: vi.fn(),
     ...overrides
   };
 }
 
 describe("createProductsService", () => {
+  it('validates sorting and passes it to the paginated repository query', async () => {
+    const repo = makeRepo();
+    const service = createProductsService(repo);
+    await service.list({ page: '2', pageSize: '10', q: 'Tea', sort: 'price', direction: 'desc' });
+    expect(repo.list).toHaveBeenCalledWith({ page: 2, pageSize: 10, q: 'Tea', sort: 'price', direction: 'desc' });
+    await expect(service.list({ sort: 'name;drop table products' })).rejects.toBeInstanceOf(ValidationError);
+    await expect(service.list({ sort: 'price', direction: 'sideways' })).rejects.toBeInstanceOf(ValidationError);
+  });
+  it('accepts exact measured quantities and rejects silent rounding or service balances', async () => {
+    const repo = makeRepo();
+    const service = createProductsService(repo);
+    await service.create({ name: 'Flour', sku: 'FL-1', priceCents: 100, stock: 1.5, unitType: 'kg' });
+    expect(repo.create).toHaveBeenCalledWith(expect.objectContaining({ stock: 1.5 }));
+    for (const input of [
+      { stock: 0.0001, unitType: 'kg' }, { stock: 1.5, unitType: 'unit' },
+      { stock: 1, productType: 'service' }, { stock: Number.NaN }, { stock: Infinity }
+    ]) {
+      await expect(service.create(Object.assign({ name: 'A', sku: 'AA', priceCents: 100, stock: 0 }, input))).rejects.toBeInstanceOf(ValidationError);
+    }
+  });
+
+  it('parses Romanian decimal entry and converts decimal digits exactly', () => {
+    expect(parseQuantityText('1,250')).toBe(1.25);
+    expect(quantityToMillis(1.001)).toBe(1001);
+    expect(quantityToMillis(0.009)).toBe(9);
+    expect(quantityToMillis(0.0001)).toBeUndefined();
+    expect(parseQuantityText('1.234,50')).toBeUndefined();
+    expect(parseQuantityText('1e3')).toBeUndefined();
+  });
+
+  it('validates movements and forwards only verified actor and normalized fields', async () => {
+    const repo = makeRepo();
+    const service = createProductsService(repo);
+    const body = { kind: 'consume', quantity: 0.25, reason: '  Used in service  ', idempotencyKey: product.id, actor: 'forged' };
+    await service.move(product.id, body, 'verified-subject');
+    expect(repo.move).toHaveBeenCalledWith(product.id, { kind: 'consume', quantity: 0.25, reason: 'Used in service', idempotencyKey: product.id }, 'verified-subject');
+    for (const invalid of [{ quantity: 0 }, { quantity: -1 }, { quantity: 0.0001 }, { reason: ' ' }, { idempotencyKey: 'bad' }]) {
+      await expect(service.move(product.id, { ...body, ...invalid }, 'verified')).rejects.toBeInstanceOf(ValidationError);
+    }
+  });
   describe("create", () => {
     it("trims and forwards valid input to the repository", async () => {
       const repo = makeRepo();
@@ -41,7 +86,9 @@ describe("createProductsService", () => {
         name: "Espresso beans 1kg",
         sku: "esp-1kg",
         priceCents: 1899,
-        stock: 25
+        stock: 25,
+        unitType: "unit",
+        productType: "endproduct"
       });
     });
 

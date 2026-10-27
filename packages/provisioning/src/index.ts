@@ -168,6 +168,16 @@ export function createProvisioner(deps: ProvisionerDeps): Provisioner {
       [input.slug, schema, input.name, input.plan ?? "free"]
     );
 
+    // New workspaces begin with the current baseline so introducing module
+    // entitlements does not change the self-serve signup experience.
+    await pool.query(
+      `INSERT INTO public.tenant_module_entitlements (tenant_id, module_key, enabled)
+       SELECT $1::uuid, module_key, true
+       FROM unnest(ARRAY['inventory', 'sales', 'sales-insights']::text[]) AS modules(module_key)
+       ON CONFLICT (tenant_id, module_key) DO NOTHING`,
+      [inserted.rows[0].id]
+    );
+
     await pool.query(
       `INSERT INTO ${quoteIdent(schema)}.app_settings (key, value)
        VALUES ('tenant.name', $1::jsonb)

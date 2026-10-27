@@ -1,42 +1,79 @@
 <section class="card">
-  <a routerLink="/app/products" class="back">← Products</a>
-  <h1>{{ isEdit() ? 'Edit product' : 'New product' }}</h1>
+  <a routerLink="/app/products" class="back">{{ i18n.t('productEdit.back') }}</a>
+  <h1>{{ isEdit() ? i18n.t('productEdit.editTitle') : i18n.t('productEdit.newTitle') }}</h1>
 
   @if (loading()) {
-    <p class="muted">Loading…</p>
+    <p class="muted">{{ i18n.t('productEdit.loading') }}</p>
   } @else if (loadError(); as loadError) {
     <p class="error" role="alert">{{ loadError }}</p>
   } @else {
     <form (submit)="onSubmit($event)">
-      <label>Name
-        <input type="text" id="product-name" [formField]="productForm.name" placeholder="Espresso beans 1kg" />
-        @if (productForm.name().touched() && productForm.name().errors().length > 0) {
-          <span class="hint error">{{ productForm.name().errors()[0].message }}</span>
-        }
-      </label>
-      <label>SKU
-        <input type="text" id="product-sku" [formField]="productForm.sku" placeholder="ESP-1KG" />
-        @if (productForm.sku().touched() && productForm.sku().errors().length > 0) {
-          <span class="hint error">{{ productForm.sku().errors()[0].message }}</span>
-        }
-      </label>
-      <label>Price
-        <input type="number" id="product-price" step="0.01" [formField]="productForm.price" />
-        @if (productForm.price().touched() && productForm.price().errors().length > 0) {
-          <span class="hint error">{{ productForm.price().errors()[0].message }}</span>
-        }
-      </label>
-      <label>Stock
-        <input type="number" id="product-stock" step="1" [formField]="productForm.stock" />
-        @if (productForm.stock().touched() && productForm.stock().errors().length > 0) {
-          <span class="hint error">{{ productForm.stock().errors()[0].message }}</span>
-        }
-      </label>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('productEdit.name') }}</mat-label>
+        <input matInput id="product-name" [formField]="productForm.name" [placeholder]="i18n.t('productEdit.name')" />
+      </mat-form-field>
+      @if (productForm.name().touched() && productForm.name().errors().length > 0) {
+        <span class="hint error">{{ productForm.name().errors()[0].message }}</span>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('productEdit.sku') }}</mat-label>
+        <input matInput id="product-sku" [formField]="productForm.sku" placeholder="ESP-1KG" />
+      </mat-form-field>
+      @if (productForm.sku().touched() && productForm.sku().errors().length > 0) {
+        <span class="hint error">{{ productForm.sku().errors()[0].message }}</span>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('productEdit.price') }} (RON)</mat-label>
+        <input matInput id="product-price" type="number" step="0.01" [formField]="productForm.price" />
+      </mat-form-field>
+      @if (productForm.price().touched() && productForm.price().errors().length > 0) {
+        <span class="hint error">{{ productForm.price().errors()[0].message }}</span>
+      }
+
+      @if (!isService() && !isEdit()) {
+        <mat-form-field appearance="outline">
+          <mat-label>{{ i18n.t('inventory.opening') }}</mat-label>
+          <input matInput id="product-stock" type="number" step="0.001" [formField]="productForm.stock" />
+        </mat-form-field>
+        <p class="hint">{{ i18n.t('inventory.openingHint') }}</p>
+      } @else if (isEdit() && !isService()) {
+        <p>{{ i18n.t('inventory.balance') }}: <strong>{{ currentStock() | number:'1.0-3':i18n.lang() }} {{ currentUnit() === 'unit' ? i18n.t('unit.unit') : currentUnit() }}</strong></p>
+        <a matButton="outlined" [routerLink]="['/app/products', id()]">{{ i18n.t('productDetail.view') }}</a>
+        <p class="hint">{{ i18n.t('inventory.editHint') }}</p>
+      } @else {
+        <p class="hint">{{ i18n.t('inventory.untracked') }}</p>
+      }
+      @if (productForm.stock().touched() && productForm.stock().errors().length > 0) {
+        <span class="hint error">{{ productForm.stock().errors()[0].message }}</span>
+      }
+
+      @if (!isService()) {
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('productEdit.unitType') }}</mat-label>
+        <select matNativeControl id="product-unit-type" [formField]="productForm.unitType">
+          @for (unit of unitTypes; track unit) {
+            <option [value]="unit">{{ i18n.t(unitKey(unit)) }}</option>
+          }
+        </select>
+      </mat-form-field>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('productEdit.productType') }}</mat-label>
+        <select matNativeControl id="product-type" [formField]="productForm.productType">
+          @for (type of productTypes; track type) {
+            <option [value]="type">{{ i18n.t(productTypeKey(type)) }}</option>
+          }
+        </select>
+      </mat-form-field>
+
       @if (error(); as serverError) {
         <p class="error" role="alert">{{ serverError }}</p>
       }
-      <button type="submit" [disabled]="productForm().invalid() || submitting()">
-        {{ submitting() ? 'Saving…' : (isEdit() ? 'Save changes' : 'Create product') }}
+      <button matButton="filled" type="submit" [disabled]="productForm().invalid() || submitting()">
+        {{ submitting() ? i18n.t('productEdit.saving') : (isEdit() ? i18n.t('productEdit.saveChanges') : i18n.t('productEdit.createProduct')) }}
       </button>
     </form>
   }

@@ -1,14 +1,14 @@
 .card {
   width: 100%;
-  max-width: 46rem;
+  max-width: 75rem;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgb(0 0 0 / 8%);
-  padding: 2rem 2.5rem;
+  border: 1px solid #dce7e1;
+  padding: clamp(1.2rem, 3vw, 2.5rem);
   text-align: left;
 
-  h1 { margin: 0 0 0.25rem; font-size: 1.4rem; }
-  .muted { color: #6b7280; }
+  h1 { margin: 0 0 0.25rem; font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: -0.04em; line-height: 1.15; }
+  .muted { color: #526a60; }
   .error { color: #dc2626; }
 
   .title-row {
@@ -16,110 +16,42 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
-
-    .button {
-      padding: 0.5rem 1.25rem;
-      border: none;
-      border-radius: 8px;
-      background: #2563eb;
-      color: #fff;
-      font-size: 0.95rem;
-      text-decoration: none;
-
-      &:hover { background: #1d4ed8; }
-      &:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-    }
   }
 
   .search {
     display: flex;
     gap: 0.5rem;
     margin: 1rem 0 0.75rem;
-
-    input {
-      flex: 1;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 0.95rem;
-
-      &:focus { outline: 2px solid #2563eb; border-color: transparent; }
-    }
-
-    button {
-      padding: 0.5rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      background: #fff;
-      color: #374151;
-      cursor: pointer;
-
-      &:hover { background: #f3f4f6; }
-      &:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-    }
-  }
-
-  table {
-    width: 100%;
-    margin-top: 0.5rem;
-    border-collapse: collapse;
-    font-size: 0.9rem;
-
-    th, td { padding: 0.5rem 0.6rem; text-align: left; vertical-align: middle; }
-    thead th { border-bottom: 2px solid #d1d5db; font-weight: 600; }
-    tbody tr { border-bottom: 1px solid #e5e7eb; }
-    tbody tr:last-child { border-bottom: none; }
-    code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; }
-
-    .row-actions {
-      display: flex;
-      gap: 0.6rem;
-      align-items: center;
-
-      a { color: #2563eb; text-decoration: none; &:hover { text-decoration: underline; } }
-
-      button.danger {
-        padding: 0.3rem 0.75rem;
-        border: 1px solid #d1d5db;
-        border-radius: 8px;
-        background: #fff;
-        color: #dc2626;
-        font-size: 0.85rem;
-        cursor: pointer;
-
-        &:hover:not(:disabled) { background: #fef2f2; }
-        &:disabled { opacity: 0.6; cursor: wait; }
-      }
-    }
-  }
-
-  .pager {
-    display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-top: 1rem;
 
-    button {
-      padding: 0.4rem 0.9rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      background: #fff;
-      color: #374151;
-      cursor: pointer;
-
-      &:disabled { opacity: 0.5; cursor: default; }
-      &:hover:not(:disabled) { background: #f3f4f6; }
-      &:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+    .search-field {
+      flex: 1;
     }
   }
 
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+  code {
+    background: #edf4ef;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+  }
+
+  .row-actions {
+    display: inline-flex;
+    gap: 0.25rem;
+    align-items: center;
+
+    button.danger {
+      color: var(--mat-sys-error);
+    }
   }
 }
+
+.product-name { color: var(--sb-primary); text-decoration: none; }
+.product-name:hover { text-decoration: underline; text-underline-offset: 0.15em; }
+.product-name:focus-visible { outline: 2px solid var(--sb-primary); outline-offset: 2px; }
+
+:host { display: block; min-width: 0; }
+.card .muted { line-height: 1.5; }
+.card table { font-variant-numeric: tabular-nums; }
+@media (max-width: 620px) { .card .title-row, .card .search { flex-direction: column; align-items: stretch; } .card .facts { grid-template-columns: 1fr; } }

@@ -1,27 +1,84 @@
-<section class="card">
-  <h1>sass-retail</h1>
+<section class="dashboard">
+  <header class="page-header">
+    <div>
+      <p class="overline">{{ identity.tenant.hasValue() ? i18n.t('home.workspace') : i18n.t('home.gettingStarted') }}</p>
+      <h1>
+        @if (identity.tenant.hasValue()) {
+          {{ identity.tenant.value().name }}
+        } @else {
+          {{ i18n.t('home.yourWorkspace') }}
+        }
+      </h1>
+      <p class="muted">{{ i18n.t('home.intro') }}</p>
+    </div>
+    @if (identity.hasModule('inventory')) {
+      <a class="primary-action" routerLink="/app/products">{{ i18n.t('home.openCatalog') }} <span aria-hidden="true">→</span></a>
+    } @else if (identity.hasModule('sales')) {
+      <a class="primary-action" routerLink="/app/sales">{{ i18n.t('sales.title') }} <span aria-hidden="true">→</span></a>
+    }
+  </header>
+
+  <div class="signal-row">
+    @if (identity.hasModule('inventory')) {
+      <article class="signal ready">
+        <span class="signal-mark" aria-hidden="true">✓</span>
+        <div><strong>{{ i18n.t('home.catalogReady') }}</strong><p>{{ i18n.t('home.catalogSummary') }}</p></div>
+      </article>
+    }
+    <article class="signal">
+      <span class="signal-mark" aria-hidden="true">+</span>
+      <div><strong>{{ i18n.t('home.moreTools') }}</strong><p>{{ i18n.t('home.roadmapSummary') }}</p></div>
+    </article>
+  </div>
+
+  <section class="workspace-grid" [attr.aria-label]="i18n.t('home.areas')">
+    @if (identity.hasModule('sales')) {
+    <a class="feature primary-feature sales-feature" routerLink="/app/sales">
+      <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l4-4 3 2 5-6"/><path d="M16 7h3v3"/></svg></span>
+      <div><p class="feature-status">{{ i18n.t('home.available') }}</p><h2>{{ i18n.t('sales.title') }}</h2><p>{{ i18n.t('sales.subtitle') }}</p></div>
+      <span class="feature-arrow" aria-hidden="true">→</span>
+    </a>
+    }
+    @if (identity.hasModule('inventory')) {
+    <a class="feature primary-feature" routerLink="/app/products">
+      <span class="feature-icon catalog-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5 6.5 4h11L20 7.5v2.25a2.75 2.75 0 0 1-4.5 2.12A2.75 2.75 0 0 1 12 12a2.75 2.75 0 0 1-3.5-.13A2.75 2.75 0 0 1 4 9.75V7.5Z"/><path d="M6 12v8h12v-8M10 20v-4h4v4"/></svg></span>
+      <div><p class="feature-status">{{ i18n.t('home.available') }}</p><h2>{{ i18n.t('home.catalog') }}</h2><p>{{ i18n.t('home.catalogDescription') }}</p></div>
+      <span class="feature-arrow" aria-hidden="true">→</span>
+    </a>
+    }
+    <article class="feature muted-feature">
+      <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3v18M19 3v18M3 7h18M3 17h18M8 10h3M8 14h6"/></svg></span>
+      <div><p class="feature-status">{{ i18n.t('home.planned') }}</p><h2>{{ i18n.t('home.checkout') }}</h2><p>{{ i18n.t('home.checkoutDescription') }}</p></div>
+    </article>
+    <article class="feature muted-feature">
+      <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0M18.5 5.5 20 7l-1.5 1.5M5.5 5.5 4 7l1.5 1.5"/></svg></span>
+      <div><p class="feature-status">{{ i18n.t('home.planned') }}</p><h2>{{ i18n.t('home.team') }}</h2><p>{{ i18n.t('home.teamDescription') }}</p></div>
+    </article>
+  </section>
+
+  <section class="workspace-note">
+    <div><p class="overline">{{ i18n.t('home.private') }}</p><h2>{{ i18n.t('home.privacyTitle') }}</h2></div>
+    <p>{{ i18n.t('home.privacyDescription') }}</p>
+  </section>
+
+  <section class="identity-details">
   @if (identity.me.hasValue()) {
-    <p>
-      Signed in as <strong>{{ identity.me.value().sub }}</strong> — roles:
-      {{ identity.me.value().roles.join(', ') || 'none' }}
-    </p>
+    <p class="muted">{{ i18n.t('home.signedInAs') }} <strong>{{ identity.userName() }}</strong></p>
   } @else if (identity.me.error()) {
-    <p class="error">Could not load identity.</p>
+    <p class="error">{{ i18n.t('home.identityError') }}</p>
   }
   @if (identity.tenant.hasValue()) {
-    <p>
-      Tenant: <strong>{{ identity.tenant.value().name }}</strong>
-      <span class="muted">({{ identity.tenant.value().slug }})</span>
-    </p>
+    <p class="muted">{{ i18n.t('home.tenantLabel') }} <strong>{{ identity.tenant.value().slug }}</strong></p>
   } @else if (identity.tenant.error()) {
     <p class="error">
       {{
         identity.tenant.statusCode() === 403
-          ? 'Your account is not linked to a tenant yet.'
-          : 'Could not load tenant data.'
+          ? i18n.t('home.noTenant')
+          : i18n.t('home.tenantError')
       }}
     </p>
   } @else {
-    <p class="muted">Loading tenant…</p>
+    <p class="muted">{{ i18n.t('common.loadingTenant') }}</p>
   }
+  </section>
 </section>

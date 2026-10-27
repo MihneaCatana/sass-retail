@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Product } from "@retail/shared-types";
+import { PRODUCT_TYPES, PRODUCT_SORT_FIELDS, UNIT_TYPES, quantityToMillis } from "@retail/shared-types";
 import type { NewProduct, ProductsRepo } from "./products.repo";
 
 /** Field-level validation failures (HTTP 400). */
@@ -40,15 +41,35 @@ const productInputSchema = z.object({
     .max(99_999_999, "Price is too large"),
   stock: z
     .number()
-    .int("Stock must be a whole number")
+    .finite()
+    .refine((n) => quantityToMillis(n) !== undefined, 'Use at most three decimal places')
+    .pipe(z.number()
     .min(0, "Stock cannot be negative")
-    .max(1_000_000, "Stock is too large")
+    .max(1_000_000, "Stock is too large")),
+  unitType: z.enum(UNIT_TYPES, { message: "Invalid unit type" }).default("unit"),
+  productType: z.enum(PRODUCT_TYPES, { message: "Invalid product type" }).default("endproduct")
+}).superRefine((value, ctx) => {
+  if (value.unitType === 'unit' && !Number.isInteger(value.stock)) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['stock'], message: 'Whole units required' });
+  if (value.productType === 'service' && value.stock !== 0) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['stock'], message: 'Services cannot have stock' });
 });
+
+const movementSchema = z.object({
+  kind: z.enum(['receive', 'consume', 'waste', 'adjust']),
+  quantity: z.number().finite().refine((n) => {
+    const millis = quantityToMillis(n);
+    return millis !== undefined && millis !== 0 && Math.abs(millis) <= 1_000_000_000;
+  }, 'Enter a nonzero quantity with at most three decimal places'),
+  reason: z.string().trim().min(1).max(500),
+  idempotencyKey: z.string().uuid()
+}).refine((v) => v.kind === 'adjust' || v.quantity > 0, { path: ['quantity'], message: 'Enter a positive quantity' });
+const reverseSchema = z.object({ reason: z.string().trim().min(1).max(500), idempotencyKey: z.string().uuid() });
 
 export interface ProductListQuery {
   page?: string;
   pageSize?: string;
   q?: string;
+  sort?: string;
+  direction?: string;
 }
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -102,11 +123,18 @@ export function createProductsService(repo: ProductsRepo) {
 
   return {
     /** List with pagination + name search. Query values arrive as strings. */
-    async list(query: ProductListQuery): Promise<{ products: Product[]; total: number; page: number; pageSize: number }> {
+    async list(query: ProductListQuery, includeLatestCost = false): Promise<{ products: Product[]; total: number; page: number; pageSize: number }> {
       const page = Math.max(1, Number.parseInt(query.page ?? "1", 10) || 1);
       const requestedPageSize = Number.parseInt(query.pageSize ?? String(DEFAULT_PAGE_SIZE), 10);
       const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, requestedPageSize || DEFAULT_PAGE_SIZE));
-      const { items, total } = await repo.list({ page, pageSize, q: query.q?.trim() || undefined });
+      const sort = z.enum(PRODUCT_SORT_FIELDS).optional().safeParse(query.sort);
+      const direction = z.enum(['asc', 'desc']).optional().safeParse(query.direction);
+      if (!sort.success || !direction.success || (sort.data === 'cost' && !includeLatestCost)) {
+        throw new ValidationError({ sort: ['Invalid sorting field or direction'] });
+      }
+      const ordering = sort.data ? { sort: sort.data, direction: direction.data ?? 'asc' as const } : {};
+      const { items, total } = await repo.list({ page, pageSize, q: query.q?.trim() || undefined, ...ordering,
+        ...(includeLatestCost ? { includeLatestCost: true } : {}) });
       return { products: items, total, page, pageSize };
     },
 
@@ -118,10 +146,10 @@ export function createProductsService(repo: ProductsRepo) {
       return product;
     },
 
-    async create(body: unknown): Promise<Product> {
+    async create(body: unknown, actor?: string): Promise<Product> {
       const input = parseInput(body);
       try {
-        return await repo.create(input);
+        return actor ? await repo.create(input, actor) : await repo.create(input);
       } catch (err) {
         throw mapRepoError(err);
       }
@@ -145,6 +173,25 @@ export function createProductsService(repo: ProductsRepo) {
       if (!removed) {
         throw new ProductNotFoundError();
       }
+    },
+
+    async movements(id: string, query: ProductListQuery) {
+      await this.get(id);
+      const page = Math.min(100_000, Math.max(1, Number.parseInt(query.page ?? '1', 10) || 1));
+      const pageSize = Math.min(100, Math.max(1, Number.parseInt(query.pageSize ?? '20', 10) || 20));
+      return { ...await repo.movements(parseId(id), page, pageSize), page, pageSize };
+    },
+
+    async move(id: string, body: unknown, actor: string) {
+      const parsed = movementSchema.safeParse(body);
+      if (!parsed.success) throw new ValidationError(parsed.error.flatten().fieldErrors);
+      return repo.move(parseId(id), parsed.data, actor);
+    },
+
+    async reverse(id: string, movementId: string, body: unknown, actor: string) {
+      const parsed = reverseSchema.safeParse(body);
+      if (!parsed.success) throw new ValidationError(parsed.error.flatten().fieldErrors);
+      return repo.reverse(parseId(id), parseId(movementId), parsed.data.reason, parsed.data.idempotencyKey, actor);
     }
   };
 }

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Romanian SMB Product Manager"
+  short_description: "Discover Romanian SMB needs and product value"
+  default_prompt: "Use $romanian-smb-pm to identify the strongest customer problems and feature opportunities for Storeboard in the Romanian SMB market, with evidence and a validation plan."

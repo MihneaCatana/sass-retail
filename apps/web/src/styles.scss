@@ -1,3 +1,6 @@
+@use '@angular/material' as mat;
+@use './theme-colors' as theme-colors;
+
 /* Layout reset — body margin + content-box sizing break the 100vh shells */
 html,
 body {
@@ -11,6 +14,38 @@ body {
   box-sizing: border-box;
 }
 
+/* Angular Material theme (M3), generated from apps/web/DESIGN.md:
+   - primary palette seeded from Daylight Blue #163d36, error from Ledger Red
+     #dc2626 (src/_theme-colors.scss, via @angular/material:theme-color);
+   - system-ui typography (no webfonts — plain and brand families match);
+   - corner tokens locked to the design radii (corner-small 8px = controls,
+     corner-medium 12px = cards);
+   - primary/on-primary overridden to the exact brand blue so it stays
+     "the single voice of interactivity". */
+html {
+  color-scheme: light;
+  @include mat.theme((
+    color: (
+      primary: theme-colors.$primary-palette,
+      tertiary: theme-colors.$tertiary-palette,
+      theme-type: light,
+    ),
+    typography: (
+      plain-family: system-ui,
+      brand-family: system-ui,
+      bold-weight: 700,
+      medium-weight: 500,
+      regular-weight: 400,
+    ),
+    density: 0,
+  ), $overrides: (
+    corner-small: 8px,
+    corner-medium: 12px,
+    primary: #163d36,
+    on-primary: #ffffff,
+  ));
+}
+
 /* Browser surfaces — themed from the palette (apps/web/DESIGN.md) */
 
 ::selection {
@@ -19,13 +54,23 @@ body {
 
 input,
 textarea {
-  caret-color: #2563eb;
+  caret-color: #163d36;
 }
 
 input:-webkit-autofill,
 textarea:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
-  -webkit-text-fill-color: #111827;
-  caret-color: #111827;
+  -webkit-text-fill-color: #152333;
+  caret-color: #152333;
 }
+
+
+:root {
+ --sb-primary: #163d36; --sb-primary-hover: #24564c; --sb-background: #f7faf8; --sb-ink: #152333; --sb-muted: #526a60; --sb-border: #dce7e1; --sb-lime: #d6f86a; --sb-error: #b42318;
+ --mat-sys-primary: #163d36; --mat-sys-on-primary: #ffffff; --mat-sys-primary-container: #dceee3; --mat-sys-on-primary-container: #163d36; --mat-sys-surface: #fcfdfd; --mat-sys-surface-container-low: #edf4ef; --mat-sys-on-surface: #152333; --mat-sys-on-surface-variant: #526a60; --mat-sys-outline: #789488; --mat-sys-outline-variant: #dce7e1;
+}
+body { font-family: system-ui, sans-serif; color: var(--sb-ink); background: var(--sb-background); }
+a { text-underline-offset: 0.2em; }
+:focus-visible { outline: 2px solid var(--sb-primary); outline-offset: 3px; }
+* { scrollbar-color: #9ab6ac var(--sb-background); scrollbar-width: thin; }
 

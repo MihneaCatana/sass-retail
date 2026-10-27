@@ -1,0 +1,4 @@
+interface:
+  display_name: "Storeboard Frontend QA"
+  short_description: "Test Storeboard user flows through the live frontend"
+  default_prompt: "Use $storeboard-frontend-qa to test the Storeboard frontend with the authorized test account, record reproducible findings, and report passed, failed, blocked, and untested cases."

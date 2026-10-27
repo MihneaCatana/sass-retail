@@ -19,6 +19,8 @@ const existing: Product = {
   sku: 'ESP-1KG',
   priceCents: 1899,
   stock: 25,
+  unitType: 'kg',
+  productType: 'endproduct',
   createdAt: '2026-01-01T10:00:00.000Z',
   updatedAt: '2026-01-05T10:00:00.000Z'
 };
@@ -90,7 +92,9 @@ describe('ProductEdit', () => {
       name: 'Espresso beans 1kg',
       sku: 'ESP-1KG',
       priceCents: 1899,
-      stock: 25
+      stock: 25,
+      unitType: 'unit',
+      productType: 'endproduct'
     });
   });
 

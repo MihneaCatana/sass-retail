@@ -1,0 +1,19 @@
+:host { position: fixed; z-index: 1000; inset: 1rem 1rem auto auto; width: min(28rem, calc(100vw - 2rem)); }
+.error-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--sb-error) 80%, #000);
+  border-radius: 0.75rem;
+  background: var(--sb-error);
+  color: #fff;
+  box-shadow: 0 0.5rem 1.5rem rgb(21 35 51 / 18%);
+  font-size: 0.9rem;
+  line-height: 1.45;
+
+  svg { width: 1.2rem; height: 1.2rem; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+  span { flex: 1; }
+  button { flex: none; padding: 0.25rem; border: 0; background: transparent; color: inherit; font: inherit; font-weight: 650; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; }
+  button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 2px; }
+}

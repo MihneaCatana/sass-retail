@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-25T00:00:00.000Z",
+  "title": "Design System: Storeboard Web",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "auth-preview",
+        "value": "0 22px 45px rgb(2 17 13 / 32%)",
+        "purpose": "Existing auth illustration only; operational surfaces use borders."
+      }
+    ],
+    "motion": [
+      {
+        "name": "entrance-easing",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Existing short auth entrance; disabled for reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stock-stack",
+        "value": "620px"
+      },
+      {
+        "name": "mobile-navigation",
+        "value": "720px"
+      },
+      {
+        "name": "auth-stack",
+        "value": "800px"
+      },
+      {
+        "name": "overview-grid",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Preview of the filled action; use Angular Material in the application.",
+      "html": "<button class=\"ds-primary\">Save movement</button>",
+      "css": ".ds-primary { font: 600 0.95rem system-ui; padding: 0.75rem 1.25rem; border: 0; border-radius: 8px; background: var(--sb-primary, #163d36); color: #fff; cursor: pointer; }.ds-primary:hover { background: var(--sb-primary-hover, #24564c); }.ds-primary:focus-visible { outline: 2px solid var(--sb-primary, #163d36); outline-offset: 3px; }.ds-primary:disabled { opacity: 0.5; cursor: default; }"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined action preview; production uses Material outlined buttons.",
+      "html": "<button class=\"ds-secondary\">Refresh</button>",
+      "css": ".ds-secondary { font: 500 0.95rem system-ui; padding: 0.75rem 1.25rem; border: 1px solid #789488; border-radius: 8px; background: #fff; color: var(--sb-primary, #163d36); cursor: pointer; }.ds-secondary:hover { background: #edf4ef; }.ds-secondary:focus-visible { outline: 2px solid var(--sb-primary, #163d36); outline-offset: 3px; }"
+    },
+    {
+      "name": "Quantity field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Labeled measured quantity preview; production uses Material and Signal Forms.",
+      "html": "<label class=\"ds-field\">Quantity (kg)<input class=\"ds-input\" inputmode=\"decimal\" value=\"1.250\" aria-describedby=\"ds-quantity-hint\"><span id=\"ds-quantity-hint\" class=\"ds-hint\">Up to three decimal places.</span></label>",
+      "css": ".ds-field { display: grid; gap: 0.5rem; font: 500 0.85rem system-ui; color: var(--sb-ink, #152333); }.ds-input { font: 400 0.95rem system-ui; padding: 0.75rem; border: 1px solid #789488; border-radius: 8px; background: #fff; color: var(--sb-ink, #152333); caret-color: var(--sb-primary, #163d36); }.ds-input:hover { border-color: var(--sb-primary, #163d36); }.ds-input:focus-visible { outline: 2px solid var(--sb-primary, #163d36); outline-offset: 2px; }.ds-hint { color: var(--sb-muted, #526a60); font-weight: 400; }"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Dark frame with lime active destination.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace\"><a class=\"ds-nav-link ds-nav-active\" href=\"#products\" aria-current=\"page\">Products</a><a class=\"ds-nav-link\" href=\"#home\">Home</a></nav>",
+      "css": ".ds-nav { padding: 1rem; background: var(--sb-primary, #163d36); display: grid; gap: 0.25rem; }.ds-nav-link { padding: 0.8rem 0.9rem; border-radius: 8px; font: 550 0.9rem system-ui; color: #d4e4dc; text-decoration: none; }.ds-nav-link:hover { background: #24564c; color: #fff; }.ds-nav-active, .ds-nav-active:hover { background: var(--sb-lime, #d6f86a); color: #163d36; }.ds-nav-link:focus-visible { outline: 2px solid #d6f86a; outline-offset: 2px; }"
+    },
+    {
+      "name": "Working surface",
+      "kind": "card",
+      "refersTo": "working-surface",
+      "description": "Flat task boundary with a hairline; avoid nested decorative cards.",
+      "html": "<section class=\"ds-surface\"><h2 class=\"ds-title\">Stock movements</h2><p class=\"ds-copy\">Review quantities and reasons in one working surface.</p></section>",
+      "css": ".ds-surface { padding: clamp(1.2rem, 3vw, 2.5rem); border: 1px solid var(--sb-border, #dce7e1); border-radius: 12px; background: #fff; color: var(--sb-ink, #152333); font-family: system-ui; }.ds-title { margin: 0; font-size: 1.25rem; }.ds-copy { color: var(--sb-muted, #526a60); line-height: 1.5; margin-bottom: 0; }"
+    },
+    {
+      "name": "Active status",
+      "kind": "chip",
+      "refersTo": "status-active",
+      "description": "Informational state label, not a button.",
+      "html": "<span class=\"ds-status\">Active</span>",
+      "css": ".ds-status { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; background: #dcfce7; color: #166534; font: 400 0.8rem system-ui; }"
+    },
+    {
+      "name": "Stock movement",
+      "kind": "custom",
+      "description": "Illustrative history row with signed delta, before/after balance, and reason.",
+      "html": "<article class=\"ds-movement\"><div><strong>Consumption</strong><p class=\"ds-meta\">Illustrative entry · workspace member</p><p class=\"ds-meta\">Used during service</p></div><div class=\"ds-quantity\"><strong>−0.250 kg</strong><p class=\"ds-meta\">1.500 → 1.250 kg</p></div></article>",
+      "css": ".ds-movement { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; padding: 1.5rem 0; border-bottom: 1px solid var(--sb-border, #dce7e1); font: 400 0.95rem system-ui; color: var(--sb-ink, #152333); }.ds-meta { margin: 0.3rem 0 0; color: var(--sb-muted, #526a60); font-size: 0.85rem; line-height: 1.5; }.ds-quantity { text-align: right; font-variant-numeric: tabular-nums; }"
+    }
+  ],
+  "narrative": {
+    "overview": "Storeboard's approved identity is a calm, organized green workspace: a dark\nnavigation frame, light working surfaces, restrained lime accents, and clear\noperational content. This refresh consolidates the accepted Storeboard extension\nand supersedes the obsolete blue-only, single-centered-card baseline.\n\nOptimize for owners and staff using the product between customer-facing tasks.\nMake the next action, current balance, validation feedback, and recovery path easy\nto find. Brand character comes from color, typography, spacing, and dependable\nbehavior rather than decorative components.",
+    "keyCharacteristics": [
+      "Forest-green navigation and primary actions; lime for selected navigation.",
+      "Neutral working surfaces, thin dividers, and readable quantities.",
+      "Angular Material controls with app-specific shells and shared data components.",
+      "Romanian/English content and responsive, keyboard-accessible operation."
+    ],
+    "rules": [
+      {
+        "name": "The Semantic Color Rule",
+        "body": "Reuse global `--sb-*` and `--mat-sys-*` roles in new styles. Adjust shared theme roles when a component needs a systematic change; do not target private Material DOM/classes.",
+        "section": "colors"
+      },
+      {
+        "name": "The Working Surface Rule",
+        "body": "Group by task, separate by whitespace or a divider, and reserve a decorated surface for a real working boundary.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do reuse semantic tokens and established Material/shared component APIs.",
+      "Do prioritize the operator's next task, current state, and recovery path.",
+      "Do show quantities with units and prices with their currency context.",
+      "Do verify mobile, keyboard, translated content, and async failure states.",
+      "Do distinguish observed implementation from forward guidance and known drift."
+    ],
+    "donts": [
+      "Don't restore the superseded blue-only theme or fixed-width auth layout.",
+      "Don't clone bespoke controls or override private Material implementation classes.",
+      "Don't hide essential meaning in color, hover, an icon, or a tooltip alone.",
+      "Don't round stock for visual convenience or present services as physical stock.",
+      "Don't treat old literals, decorative overlines, or existing accessibility gaps as reusable rules."
+    ]
+  }
+}

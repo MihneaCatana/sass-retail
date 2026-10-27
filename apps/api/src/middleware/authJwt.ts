@@ -33,8 +33,13 @@ export async function authJwt(req: Request, res: Response, next: NextFunction): 
       algorithms: ["RS256"]
     });
 
+    if (typeof payload.sub !== 'string' || payload.sub.trim().length === 0) {
+      res.status(401).json({ error: 'Access token is missing its user subject' });
+      return;
+    }
+
     req.auth = {
-      sub: payload.sub as string,
+      sub: payload.sub,
       tenantSlug: typeof payload.tenant_slug === "string" ? payload.tenant_slug : undefined,
       roles: (payload.realm_access as RealmAccess | undefined)?.roles ?? []
     };

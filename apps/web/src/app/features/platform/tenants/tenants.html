@@ -1,23 +1,23 @@
 <section class="card">
-  <h1>All tenants</h1>
-  <p class="muted">Registry of every tenant workspace created in the platform.</p>
+  <h1>{{ i18n.t('tenants.title') }}</h1>
+  <p class="muted">{{ i18n.t('tenants.subtitle') }}</p>
 
   @if (tenants.error()) {
     <p class="error" role="alert">{{ errorMessage() }}</p>
   } @else if (tenants.isLoading() && tenantsList().length === 0) {
-    <p class="muted">Loading tenants…</p>
+    <p class="muted">{{ i18n.t('tenants.loading') }}</p>
   } @else if (tenantsList().length === 0) {
-    <p class="muted">No tenants have been created yet.</p>
+    <p class="muted">{{ i18n.t('tenants.empty') }}</p>
   } @else {
     <table>
-      <caption class="muted">{{ tenantsList().length }} tenant(s)</caption>
+      <caption class="muted">{{ i18n.t('tenants.count', { count: tenantsList().length }) }}</caption>
       <thead>
         <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Slug</th>
-          <th scope="col">Plan</th>
-          <th scope="col">Status</th>
-          <th scope="col">Created</th>
+          <th scope="col">{{ i18n.t('tenants.colName') }}</th>
+          <th scope="col">{{ i18n.t('tenants.colSlug') }}</th>
+          <th scope="col">{{ i18n.t('tenants.colPlan') }}</th>
+          <th scope="col">{{ i18n.t('tenants.colStatus') }}</th>
+          <th scope="col">{{ i18n.t('tenants.colCreated') }}</th>
         </tr>
       </thead>
       <tbody>
@@ -27,7 +27,7 @@
             <td><code>{{ tenant.slug }}</code></td>
             <td>{{ tenant.plan }}</td>
             <td><app-status-badge [status]="tenant.status" /></td>
-            <td>{{ tenant.createdAt | date: 'medium' }}</td>
+            <td>{{ dateTime(tenant.createdAt) }}</td>
           </tr>
         }
       </tbody>
@@ -36,7 +36,7 @@
 
   <div class="actions">
     <button type="button" (click)="refresh()" [disabled]="tenants.isLoading()">
-      {{ tenants.isLoading() ? 'Refreshing…' : 'Refresh' }}
+      {{ tenants.isLoading() ? i18n.t('common.refreshing') : i18n.t('common.refresh') }}
     </button>
   </div>
 </section>

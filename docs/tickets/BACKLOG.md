@@ -1,5 +1,33 @@
 # Backlog Tickets (open work)
 
+## TICKET-112 - Inventory foundation
+- **Type:** feature - **Status:** done (2026-10-25)
+- **Plan:** `docs/plans/inventory-foundation.md`.
+- **Scope:** precise measured quantities, recorded stock movements, reversals,
+  idempotent retries, immutable history, service separation, localized stock UI.
+- **Implemented:** contracts, migration 0004, transaction/repository/service/API,
+  stock page and product-form/list behavior; regression and PostgreSQL checks.
+- **Outcome:** local retail-web basic subject scope was repaired without resetting
+  users/sessions. HTTP inventory integration and frontend QA fixes verified;
+  readable account labels and catalog sorting followed.
+- **Verification:** see `docs/qa/2026-10-25-qa-fixes.md`; stock writes, reversals,
+  isolation, exact quantities, retries, and UI regressions passed.
+
+## TICKET-113 - Sales, costs, performance, and simulator
+- **Type:** feature - **Status:** in progress (2026-10-25)
+- **Product:** `docs/features/sales/PRODUCT.md`.
+- **Plan:** `docs/plans/sales-implementation.md`.
+- **Scope:** operational sales with atomic inventory integration, returns and
+  cancellation, standard cost versions/snapshots, recorded-sales performance with
+  estimated profit/coverage, and a hypothetical interactive simulator.
+- **Boundary:** no fiscal/payment processing; actual realized costing and customer
+  pilot validation remain explicit gates, not implemented accounting claims.
+- **Validation:** implementation deployed locally; API62, frontend47, integration40
+  and production builds pass. Designer source findings corrected. Rendered design
+  approval and all12 frontend QA cases blocked by unavailable browser access;
+  see `docs/features/sales/DESIGN-VALIDATION.md` and
+  `docs/qa/2026-10-25-sales-frontend-qa.md`. Do not mark done before live checks pass.
+
 Actionable tickets for remaining work. Phase 6 items reference their
 `TECH_DEBT.md` IDs; fix the debt, then mark both done.
 

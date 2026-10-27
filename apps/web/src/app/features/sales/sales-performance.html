@@ -1,0 +1,90 @@
+<main class="workspace performance-page">
+  <header class="page-head">
+    <div>
+      <h1>{{ i18n.t('sales.performance') }}</h1>
+      <p class="muted">{{ i18n.t('sales.performanceIntro') }}</p>
+    </div>
+  </header>
+
+  @if (!identity.isTenantAdmin()) {
+    <p class="notice">{{ i18n.t('sales.noCostAccess') }}</p>
+  } @else {
+    <p class="notice period-note">{{ i18n.t('sales.periodHint') }}</p>
+    <form class="toolbar performance-filters" (submit)="apply($event)">
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('sales.from') }}</mat-label>
+        <input matInput type="date" lang="en-GB" [value]="filters().from" (input)="field('from', $event)">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('sales.to') }}</mat-label>
+        <input matInput type="date" lang="en-GB" [value]="filters().to" (input)="field('to', $event)">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('sales.productFilter') }}</mat-label>
+        <input matInput [value]="filters().q" (input)="field('q', $event)">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ i18n.t('sales.type') }}</mat-label>
+        <select matNativeControl [value]="filters().type" (change)="field('type', $event)">
+          <option value="">{{ i18n.t('sales.allTypes') }}</option>
+          <option value="endproduct">{{ i18n.t('productType.endproduct') }}</option>
+          <option value="consumable">{{ i18n.t('productType.consumable') }}</option>
+          <option value="service">{{ i18n.t('productType.service') }}</option>
+        </select>
+      </mat-form-field>
+      <button matButton="outlined" type="submit">{{ i18n.t('sales.filter') }}</button>
+    </form>
+
+    @if (data.isLoading()) {
+      <p role="status">{{ i18n.t('sales.loading') }}</p>
+    } @else if (data.error()) {
+      <p class="error" role="alert">{{ i18n.t('sales.error.generic') }}</p>
+      <button matButton="outlined" type="button" (click)="data.reload()">{{ i18n.t('sales.retry') }}</button>
+    } @else if (data.value(); as d) {
+      <dl class="performance-summary" [attr.aria-label]="i18n.t('sales.performance')">
+        <div><dt>{{ i18n.t('sales.gross') }}</dt><dd>{{ d.totalSalesCents / 100 | number:'1.2-2':i18n.lang() }} RON</dd></div>
+        <div><dt>{{ i18n.t('sales.returned') }}</dt><dd>{{ d.returnedCents / 100 | number:'1.2-2':i18n.lang() }} RON</dd></div>
+        <div><dt>{{ i18n.t('sales.net') }}</dt><dd>{{ d.netSalesCents / 100 | number:'1.2-2':i18n.lang() }} RON</dd></div>
+        <div><dt>{{ i18n.t('sales.profit') }}</dt><dd>{{ d.estimatedProfitCents === null ? i18n.t('sales.unknown') : (d.estimatedProfitCents / 100 | number:'1.2-2':i18n.lang()) + ' RON' }}</dd></div>
+        <div><dt>{{ i18n.t('sales.coverage') }}</dt><dd>{{ d.costCoveragePercent === null ? i18n.t('sales.unknown') : (d.costCoveragePercent | number:'1.0-1':i18n.lang()) + '%' }}</dd></div>
+      </dl>
+      <p class="notice coverage-note">{{ i18n.t('sales.coverageHint') }}</p>
+
+      <section class="performance-section" aria-labelledby="product-performance-heading">
+        <header class="section-heading">
+          <h2 id="product-performance-heading">{{ i18n.t('sales.product') }}</h2>
+          <a matButton="text" routerLink="/app/sales">{{ i18n.t('sales.title') }}</a>
+        </header>
+        @if (ordered().length) {
+          <app-data-table [ariaLabel]="i18n.t('sales.product')" [columns]="productColumns()" [rows]="ordered()" [sortActive]="sort().active" [sortDirection]="sort().direction" (sortChange)="onSort($event)">
+            <ng-template appTableCell="product" let-product>
+              <a class="performance-product" [routerLink]="['/app/products', product.productId]">{{ product.name }}</a>
+              <small class="product-sku">{{ product.sku }}</small>
+            </ng-template>
+            <ng-template appTableCell="quantitySold" let-product>{{ product.quantitySold | number:'1.0-3':i18n.lang() }} {{ unit(product.unitType) }}</ng-template>
+            <ng-template appTableCell="quantityReturned" let-product>{{ product.quantityReturned | number:'1.0-3':i18n.lang() }} {{ unit(product.unitType) }}</ng-template>
+            <ng-template appTableCell="netSalesCents" let-product>{{ product.netSalesCents / 100 | number:'1.2-2':i18n.lang() }} RON</ng-template>
+            <ng-template appTableCell="estimatedProfitCents" let-product>{{ product.estimatedProfitCents === null ? i18n.t('sales.unknown') : (product.estimatedProfitCents / 100 | number:'1.2-2':i18n.lang()) + ' RON' }}</ng-template>
+            <ng-template appTableCell="marginPercent" let-product>{{ product.marginPercent === null ? i18n.t('sales.unknown') : (product.marginPercent | number:'1.0-1':i18n.lang()) + '%' }}</ng-template>
+          </app-data-table>
+        } @else {
+          <p class="muted empty-state">{{ i18n.t('sales.noPerformance') }}</p>
+        }
+      </section>
+
+      <section class="performance-section trend-section" aria-labelledby="performance-trend-heading">
+        <h2 id="performance-trend-heading">{{ i18n.t('sales.trend') }}</h2>
+        @if (d.trend.length) {
+          <app-data-table [ariaLabel]="i18n.t('sales.trend')" [columns]="trendColumns()" [rows]="d.trend">
+            <ng-template appTableCell="date" let-day>{{ date(day.date) }}</ng-template>
+            <ng-template appTableCell="grossSalesCents" let-day>{{ day.grossSalesCents / 100 | number:'1.2-2':i18n.lang() }} RON</ng-template>
+            <ng-template appTableCell="returnedCents" let-day>{{ day.returnedCents / 100 | number:'1.2-2':i18n.lang() }} RON</ng-template>
+            <ng-template appTableCell="netSalesCents" let-day>{{ day.netSalesCents / 100 | number:'1.2-2':i18n.lang() }} RON</ng-template>
+          </app-data-table>
+        } @else {
+          <p class="muted empty-state">{{ i18n.t('sales.noPerformance') }}</p>
+        }
+      </section>
+    }
+  }
+</main>

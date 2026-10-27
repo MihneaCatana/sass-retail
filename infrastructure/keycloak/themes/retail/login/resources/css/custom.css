@@ -1,8 +1,8 @@
 /*
  * sass-retail login theme — "The Well-Lit Stockroom"
- * Tokens from apps/web/DESIGN.md: Stockroom Floor #f5f6f8, white card (12px
- * radius, card-ambient shadow), Daylight Blue #2563eb (hover #1d4ed8),
- * Ink #111827, Slate Label #374151, Shelf Grey #6b7280, Wire Grey #d1d5db,
+ * Tokens from apps/web/DESIGN.md: Stockroom Floor #f7faf8, white card (12px
+ * radius, card-ambient shadow), Daylight Blue #163d36 (hover #24564c),
+ * Ink #152333, Slate Label #36534a, Shelf Grey #526a60, Wire Grey #dce7e1,
  * Ledger Red #dc2626. CSS-only overlay on the stock keycloak.v2 (PatternFly 5)
  * markup — no template overrides.
  */
@@ -13,14 +13,14 @@ html.login-pf {
 }
 
 ::selection {
-  background: rgb(37 99 235 / 18%);
+  background: rgb(22 61 54 / 18%);
 }
 
 /* ---- Page shell: Stockroom Floor ---- */
 body#keycloak-bg {
-  background: #f5f6f8;
+  background: #f7faf8;
   font-family: system-ui, sans-serif;
-  color: #111827;
+  color: #152333;
 }
 
 /* ---- Wordmark above the card ---- */
@@ -30,7 +30,7 @@ body#keycloak-bg {
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.01em;
-  color: #374151;
+  color: #36534a;
   text-align: center;
 }
 
@@ -58,7 +58,7 @@ body#keycloak-bg {
   font-size: 1.4rem;
   font-weight: 700;
   line-height: 1.2;
-  color: #111827;
+  color: #152333;
 }
 
 /* ---- Form ---- */
@@ -70,21 +70,21 @@ body#keycloak-bg {
 .pf-v5-c-login .pf-v5-c-form__label-text {
   font-size: 0.85rem;
   font-weight: 400;
-  color: #374151;
+  color: #36534a;
 }
 
 .pf-v5-c-login .pf-v5-c-form-control {
   --pf-v5-c-form-control--BorderRadius: 8px;
-  --pf-v5-c-form-control--BorderColor: #d1d5db;
+  --pf-v5-c-form-control--BorderColor: #dce7e1;
   --pf-v5-c-form-control--BackgroundColor: #ffffff;
-  --pf-v5-c-form-control--Color: #111827;
+  --pf-v5-c-form-control--Color: #152333;
   --pf-v5-c-form-control--FontSize: 0.95rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #dce7e1;
   border-radius: 8px;
   background: #fff;
-  color: #111827;
+  color: #152333;
   font-size: 0.95rem;
-  caret-color: #2563eb;
+  caret-color: #163d36;
 }
 
 .pf-v5-c-login .pf-v5-c-form-control input {
@@ -93,11 +93,11 @@ body#keycloak-bg {
 
 /* Focus: the blue ring replaces the border (DESIGN.md focus rule) */
 .pf-v5-c-login .pf-v5-c-form-control:focus-within {
-  --pf-v5-c-form-control--m-focus--BorderColor: #2563eb;
-  --pf-v5-c-form-control--m-focus--BoxShadow: inset 0 0 0 1px #2563eb;
-  --pf-v5-c-form-control--m-success--BorderColor: #2563eb;
-  border-color: #2563eb;
-  box-shadow: inset 0 0 0 1px #2563eb;
+  --pf-v5-c-form-control--m-focus--BorderColor: #163d36;
+  --pf-v5-c-form-control--m-focus--BoxShadow: inset 0 0 0 1px #163d36;
+  --pf-v5-c-form-control--m-success--BorderColor: #163d36;
+  border-color: #163d36;
+  box-shadow: inset 0 0 0 1px #163d36;
   outline: none;
 }
 
@@ -110,21 +110,21 @@ body#keycloak-bg {
 /* Password fields never render yellow autofill */
 .pf-v5-c-login input:-webkit-autofill {
   -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
-  -webkit-text-fill-color: #111827;
-  caret-color: #2563eb;
+  -webkit-text-fill-color: #152333;
+  caret-color: #163d36;
 }
 
 /* Password visibility toggle joins the field, not a foreign button */
 .pf-v5-c-login .pf-v5-c-input-group .pf-v5-c-button.pf-m-control {
   background: #fff;
-  border: 1px solid #d1d5db;
+  border: 1px solid #dce7e1;
   border-left: none;
   border-radius: 0 8px 8px 0;
-  color: #6b7280;
+  color: #526a60;
 }
 
 .pf-v5-c-login .pf-v5-c-input-group .pf-v5-c-button.pf-m-control:hover {
-  color: #374151;
+  color: #36534a;
 }
 
 /* The stock markup ships an empty spacer group — hide it */
@@ -134,11 +134,11 @@ body#keycloak-bg {
 
 /* ---- Primary action ---- */
 .pf-v5-c-login .pf-v5-c-button.pf-m-primary {
-  --pf-v5-c-button--BackgroundColor: #2563eb;
-  --pf-v5-c-button--hover--BackgroundColor: #1d4ed8;
+  --pf-v5-c-button--BackgroundColor: #163d36;
+  --pf-v5-c-button--hover--BackgroundColor: #24564c;
   --pf-v5-c-button--focus--BoxShadow: none;
   --pf-v5-c-button--Color: #ffffff;
-  background-color: #2563eb;
+  background-color: #163d36;
   border: none;
   border-radius: 8px;
   padding: 0.55rem 1.25rem;
@@ -147,22 +147,22 @@ body#keycloak-bg {
 }
 
 .pf-v5-c-login .pf-v5-c-button.pf-m-primary:hover {
-  background-color: #1d4ed8;
+  background-color: #24564c;
   color: #fff;
 }
 
 .pf-v5-c-login .pf-v5-c-button.pf-m-primary:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #163d36;
   outline-offset: 2px;
 }
 
 .pf-v5-c-login .pf-v5-c-button.pf-m-primary:active {
-  background-color: #1d4ed8;
+  background-color: #24564c;
 }
 
 /* ---- Links ---- */
 .pf-v5-c-login a {
-  color: #2563eb;
+  color: #163d36;
   text-decoration: none;
 }
 
@@ -194,11 +194,11 @@ body#keycloak-bg {
 }
 
 .pf-v5-c-login .pf-v5-c-alert.pf-m-info {
-  background: rgb(37 99 235 / 8%);
+  background: rgb(22 61 54 / 8%);
 }
 
 .pf-v5-c-login .pf-v5-c-alert.pf-m-info .pf-v5-c-alert__title {
-  color: #2563eb;
+  color: #163d36;
 }
 
 .pf-v5-c-login .pf-v5-c-alert.pf-m-warning {
@@ -263,7 +263,7 @@ body#keycloak-bg {
 #kc-header-wrapper.pf-v5-c-brand {
   margin: 0;
   padding: 0;
-  color: #111827;
+  color: #152333;
 }
 
 .pf-v5-c-login .pf-v5-c-form-control {
@@ -273,7 +273,7 @@ body#keycloak-bg {
 
 .pf-v5-c-login .pf-v5-c-form__helper-text,
 .pf-v5-c-login .pf-v5-c-helper-text {
-  color: #6b7280;
+  color: #526a60;
   font-size: 0.85rem;
 }
 
@@ -287,40 +287,40 @@ body#keycloak-bg {
 }
 
 .pf-v5-c-login .pf-v5-c-button.pf-m-primary:disabled {
-  background-color: #93c5fd;
+  background-color: #9ab6ac;
   color: #ffffff;
   cursor: wait;
 }
 
 .pf-v5-c-login .pf-v5-c-button.pf-m-secondary {
   background-color: #ffffff;
-  border: 1px solid #d1d5db;
+  border: 1px solid #dce7e1;
   border-radius: 8px;
-  color: #374151;
+  color: #36534a;
   font-size: 0.95rem;
 }
 
 .pf-v5-c-login .pf-v5-c-button.pf-m-secondary:hover {
   background-color: #f3f4f6;
-  color: #111827;
+  color: #152333;
 }
 
 .pf-v5-c-login .pf-v5-c-button.pf-m-link {
-  color: #2563eb;
+  color: #163d36;
   font-size: 0.95rem;
 }
 
 .pf-v5-c-login .pf-v5-c-button:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #163d36;
   outline-offset: 2px;
 }
 
 .pf-v5-c-login input[type='checkbox'] {
-  accent-color: #2563eb;
+  accent-color: #163d36;
 }
 
 .pf-v5-c-login .pf-v5-c-login__main-header-band {
-  color: #6b7280;
+  color: #526a60;
   font-size: 0.85rem;
 }
 
@@ -328,6 +328,6 @@ body#keycloak-bg {
    This world is light-only: reassert the palette so dark component tokens
    cannot leak through elements the rules above do not pin explicitly. */
 html.login-pf.pf-v5-theme-dark body#keycloak-bg {
-  background: #f5f6f8;
-  color: #111827;
+  background: #f7faf8;
+  color: #152333;
 }

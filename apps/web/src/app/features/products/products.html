@@ -1,23 +1,26 @@
 <section class="card">
   <div class="title-row">
     <div>
-      <h1>Products</h1>
-      <p class="muted">The catalog for your workspace.</p>
+      <h1>{{ i18n.t('products.title') }}</h1>
+      <p class="muted">{{ i18n.t('products.subtitle') }}</p>
     </div>
     @if (identity.isTenantAdmin()) {
-      <a routerLink="/app/products/new" class="button">New product</a>
+      <a matButton="filled" routerLink="/app/products/new">{{ i18n.t('products.newProduct') }}</a>
     }
   </div>
 
   <form class="search" (submit)="applySearch($event)">
-    <input
-      type="search"
-      [value]="search()"
-      (input)="onSearchInput($event)"
-      placeholder="Search by name…"
-      aria-label="Search products"
-    />
-    <button type="submit">Search</button>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>{{ i18n.t('products.searchPlaceholder') }}</mat-label>
+      <input
+        matInput
+        type="search"
+        [value]="search()"
+        (input)="onSearchInput($event)"
+        [attr.aria-label]="i18n.t('products.searchAria')"
+      />
+    </mat-form-field>
+    <button matButton="outlined" type="submit">{{ i18n.t('products.search') }}</button>
   </form>
 
   @if (actionError(); as deleteError) {
@@ -25,54 +28,54 @@
   }
 
   @if (productsResource.error()) {
-    <p class="error" role="alert">Could not load products. Please try again.</p>
+    <p class="error" role="alert">{{ i18n.t('products.loadError') }}</p>
   } @else if (productsResource.isLoading() && products().length === 0) {
-    <p class="muted">Loading products…</p>
+    <p class="muted">{{ i18n.t('products.loading') }}</p>
   } @else if (products().length === 0) {
     <p class="muted">
       @if (appliedSearch()) {
-        No products match your search.
+        {{ i18n.t('products.noMatches') }}
       } @else {
-        No products yet.
+        {{ i18n.t('products.empty') }}
       }
     </p>
   } @else {
-    <table>
-      <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">SKU</th>
-          <th scope="col">Price</th>
-          <th scope="col">Stock</th>
-          <th scope="col">Updated</th>
-          @if (identity.isTenantAdmin()) {
-            <th scope="col"><span class="visually-hidden">Actions</span></th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of products(); track p.id) {
-          <tr>
-            <td>{{ p.name }}</td>
-            <td><code>{{ p.sku }}</code></td>
-            <td>{{ p.priceCents / 100 | number: '1.2-2' }}</td>
-            <td>{{ p.stock }}</td>
-            <td>{{ p.updatedAt | date: 'medium' }}</td>
-            @if (identity.isTenantAdmin()) {
-              <td class="row-actions">
-                <a [routerLink]="['/app/products', p.id, 'edit']">Edit</a>
-                <button type="button" class="danger" (click)="remove(p.id)" [disabled]="deleting()">Delete</button>
-              </td>
-            }
-          </tr>
-        }
-      </tbody>
-    </table>
+    <app-data-table [ariaLabel]="i18n.t('products.title')" [columns]="columns()" [rows]="products()" [sortActive]="sort().active" [sortDirection]="sort().direction" (sortChange)="onSort($event)">
+      <ng-template appTableCell="name" let-p>
+        <a class="product-name" [routerLink]="['/app/products', p.id]">{{ p.name }}</a>
+      </ng-template>
+      <ng-template appTableCell="type" let-p>{{ i18n.t(typeKey(p.productType)) }}</ng-template>
+      <ng-template appTableCell="sku" let-p><code>{{ p.sku }}</code></ng-template>
+      <ng-template appTableCell="price" let-p>{{ p.priceCents / 100 | number: '1.2-2' : i18n.lang() }}</ng-template>
+      <ng-template appTableCell="cost" let-p>
+        @if (p.latestCostCents == null) { <span class="muted">{{ i18n.t('products.noLatestCost') }}</span> }
+        @else { {{ p.latestCostCents / 100 | number: '1.2-2' : i18n.lang() }} }
+      </ng-template>
+      <ng-template appTableCell="stock" let-p>
+        @if (p.productType === 'service') { {{ i18n.t('inventory.untracked') }} }
+        @else { {{ p.stock | number:'1.0-3':i18n.lang() }} {{ unitLabel(p.unitType) }} }
+      </ng-template>
+      <ng-template appTableCell="updated" let-p>{{ dateTime(p.updatedAt) }}</ng-template>
+      <ng-template appTableCell="actions" let-p>
+        <div class="row-actions">
+          <a matButton="text" [routerLink]="['/app/products', p.id]">{{ i18n.t('common.view') }}</a>
+          <a matButton="text" [routerLink]="['/app/products', p.id, 'edit']">{{ i18n.t('common.edit') }}</a>
+          <button matButton="text" type="button" class="danger" (click)="remove(p.id)" [disabled]="deleting()">
+            {{ i18n.t('common.delete') }}
+          </button>
+        </div>
+      </ng-template>
+    </app-data-table>
 
-    <div class="pager">
-      <button type="button" (click)="prevPage()" [disabled]="page() <= 1">Previous</button>
-      <span class="muted">Page {{ page() }} of {{ pageCount() }} — {{ total() }} product(s)</span>
-      <button type="button" (click)="nextPage()" [disabled]="page() >= pageCount()">Next</button>
-    </div>
+    <!-- Server-side pagination: the paginator reflects the page signal and
+         reports user-driven page changes back through onPage(). -->
+    <mat-paginator
+      [length]="total()"
+      [pageSize]="pageSize"
+      [pageIndex]="page() - 1"
+      [hidePageSize]="true"
+      [showFirstLastButtons]="false"
+      (page)="onPage($event)"
+    />
   }
 </section>

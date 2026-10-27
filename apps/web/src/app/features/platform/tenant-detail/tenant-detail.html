@@ -1,64 +1,93 @@
 <section class="card">
-  <a routerLink="/app/platform/tenants" class="back">← All tenants</a>
+  <a routerLink="/app/platform/tenants" class="back">{{ i18n.t('tenantDetail.back') }}</a>
 
   @if (detail.error()) {
     <p class="error" role="alert">
       {{
         detail.statusCode() === 404
-          ? 'Tenant not found.'
-          : 'Could not load the tenant. Please try again.'
+          ? i18n.t('tenantDetail.notFound')
+          : i18n.t('tenantDetail.loadFailed')
       }}
     </p>
   } @else if (!detail.hasValue()) {
-    <p class="muted">Loading tenant…</p>
+    <p class="muted">{{ i18n.t('common.loadingTenant') }}</p>
   } @else {
     <h1>{{ detail.value().tenant.name }}</h1>
-    <p class="muted">Registry entry and recent platform activity.</p>
+    <p class="muted">{{ i18n.t('tenantDetail.subtitle') }}</p>
 
     <dl class="facts">
       <div>
-        <dt>Slug</dt>
+        <dt>{{ i18n.t('tenantDetail.slug') }}</dt>
         <dd><code>{{ detail.value().tenant.slug }}</code></dd>
       </div>
       <div>
-        <dt>Schema</dt>
+        <dt>{{ i18n.t('tenantDetail.schema') }}</dt>
         <dd><code>{{ detail.value().tenant.schemaName }}</code></dd>
       </div>
       <div>
-        <dt>Plan</dt>
+        <dt>{{ i18n.t('tenantDetail.plan') }}</dt>
         <dd>{{ detail.value().tenant.plan }}</dd>
       </div>
       <div>
-        <dt>Status</dt>
+        <dt>{{ i18n.t('tenantDetail.status') }}</dt>
         <dd><app-status-badge [status]="detail.value().tenant.status" /></dd>
       </div>
       <div>
-        <dt>Created</dt>
-        <dd>{{ detail.value().tenant.createdAt | date: 'medium' }}</dd>
+        <dt>{{ i18n.t('tenantDetail.created') }}</dt>
+        <dd>{{ dateTime(detail.value().tenant.createdAt) }}</dd>
       </div>
       <div>
-        <dt>Updated</dt>
-        <dd>{{ detail.value().tenant.updatedAt | date: 'medium' }}</dd>
+        <dt>{{ i18n.t('tenantDetail.updated') }}</dt>
+        <dd>{{ dateTime(detail.value().tenant.updatedAt) }}</dd>
       </div>
     </dl>
 
-    <h2>Recent audit entries</h2>
+    <section class="module-access" aria-labelledby="module-access-title">
+      <div class="section-heading">
+        <h2 id="module-access-title">{{ i18n.t('tenantDetail.modulesTitle') }}</h2>
+        <p class="muted">{{ i18n.t('tenantDetail.modulesHint') }}</p>
+      </div>
+      <div class="module-list">
+        @for (module of moduleChoices; track module.key) {
+          <label class="module-row">
+            <span>{{ i18n.t(module.labelKey) }}</span>
+            <input
+              type="checkbox"
+              [checked]="selectedModules().includes(module.key)"
+              [disabled]="moduleSaving()"
+              (change)="toggleModule(module.key, $event)"
+            />
+          </label>
+        }
+      </div>
+      @if (moduleSaveError()) {
+        <p class="error" role="alert">{{ i18n.t('tenantDetail.modulesSaveFailed') }}</p>
+      }
+      @if (moduleSaveSuccess()) {
+        <p class="success" role="status">{{ i18n.t('tenantDetail.modulesSaved') }}</p>
+      }
+      <button class="save-modules" type="button" [disabled]="moduleSaving() || !hasModuleChanges()" (click)="saveModules()">
+        {{ i18n.t(moduleSaving() ? 'tenantDetail.modulesSaving' : 'tenantDetail.modulesSave') }}
+      </button>
+    </section>
+
+    <h2>{{ i18n.t('tenantDetail.auditTitle') }}</h2>
     @if (detail.value().recentAuditEntries.length === 0) {
-      <p class="muted">No audit entries reference this tenant yet.</p>
+      <p class="muted">{{ i18n.t('tenantDetail.noAudit') }}</p>
     } @else {
       <table>
         <thead>
           <tr>
-            <th scope="col">When</th>
-            <th scope="col">Actor</th>
-            <th scope="col">Action</th>
-            <th scope="col">Details</th>
+            <th scope="col">{{ i18n.t('tenantDetail.colWhen') }}</th>
+            <th scope="col">{{ i18n.t('tenantDetail.colActor') }}</th>
+            <th scope="col">{{ i18n.t('tenantDetail.colAction') }}</th>
+            <th scope="col">{{ i18n.t('tenantDetail.colDetails') }}</th>
           </tr>
         </thead>
         <tbody>
           @for (entry of detail.value().recentAuditEntries; track $index) {
             <tr>
-              <td>{{ entry.occurredAt | date: 'medium' }}</td>
+              <td>{{ dateTime(entry.occurredAt) }}</td>
               <td>{{ entry.actor }}</td>
               <td><code>{{ entry.action }}</code></td>
               <td><code class="details">{{ entry.details | json }}</code></td>

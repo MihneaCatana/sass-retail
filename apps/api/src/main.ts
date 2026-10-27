@@ -14,7 +14,9 @@ import { meRouter } from "./routes/me";
 import { onboardingRouter } from "./modules/onboarding/onboarding.routes";
 import { tenantsRouter, platformTenantsRouter } from "./modules/tenants/tenants.routes";
 import { productsRouter } from "./modules/products/products.routes";
+import { productCostsRouter, salesRouter } from './modules/sales/sales.routes';
 import { userRateLimit } from "./middleware/rateLimit";
+import { requireModule } from "./middleware/requireModule";
 
 export function createApp(): express.Express {
   const app = express();
@@ -37,7 +39,9 @@ export function createApp(): express.Express {
   // others; requests without a tenant pass the limiter and 401 at authJwt.
   const tenantApiRateLimit = tenantRateLimit({ windowMs: 60_000, max: 300 });
   app.use("/api/me", authJwt, tenantApiRateLimit, meRouter);
-  app.use("/api/products", authJwt, tenantApiRateLimit, tenantContext, productsRouter);
+  app.use("/api/products", authJwt, tenantApiRateLimit, tenantContext, requireModule("inventory"), productsRouter);
+  app.use('/api/products', authJwt, tenantApiRateLimit, tenantContext, requireModule("inventory"), productCostsRouter);
+  app.use('/api/sales', authJwt, tenantApiRateLimit, tenantContext, requireModule("sales"), salesRouter);
   app.use("/api/tenants", authJwt, tenantApiRateLimit, tenantContext, tenantsRouter);
   // Platform (cross-tenant) endpoints, outside the tenantContext middleware:
   // platform admins are not linked to any tenant. The role middleware enforces

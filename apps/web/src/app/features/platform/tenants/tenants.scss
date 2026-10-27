@@ -1,23 +1,23 @@
 .card {
   width: 100%;
-  max-width: 42rem;
+  max-width: 75rem;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgb(0 0 0 / 8%);
-  padding: 2rem 2.5rem;
+  border: 1px solid #dce7e1;
+  padding: clamp(1.2rem, 3vw, 2.5rem);
   text-align: left;
 
-  h1 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+  h1 { margin: 0 0 0.5rem; font-size: clamp(1.8rem, 3vw, 2.6rem); letter-spacing: -0.04em; line-height: 1.15; }
 
-  .muted { color: #6b7280; }
+  .muted { color: #526a60; }
 
   .row-link {
     color: inherit;
     font-weight: 500;
     text-decoration: none;
 
-    &:hover { color: #2563eb; text-decoration: underline; }
-    &:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+    &:hover { color: #163d36; text-decoration: underline; }
+    &:focus-visible { outline: 2px solid #163d36; outline-offset: 2px; }
   }
   .error { color: #dc2626; }
 
@@ -30,10 +30,10 @@
     caption { caption-side: top; text-align: left; padding: 0 0 0.5rem; font-size: 0.85rem; }
 
     th, td { padding: 0.5rem 0.75rem; text-align: left; }
-    thead th { border-bottom: 2px solid #d1d5db; font-weight: 600; }
-    tbody tr { border-bottom: 1px solid #e5e7eb; }
+    thead th { border-bottom: 2px solid #dce7e1; font-weight: 600; }
+    tbody tr { border-bottom: 1px solid #dce7e1; }
     tbody tr:last-child { border-bottom: none; }
-    code { background: #f3f4f6; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; }
+    code { background: #edf4ef; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.85em; }
   }
 
   .actions {
@@ -43,14 +43,20 @@
       padding: 0.5rem 1.25rem;
       border: none;
       border-radius: 8px;
-      background: #2563eb;
+      background: #163d36;
       color: #fff;
       font-size: 0.95rem;
       cursor: pointer;
 
-      &:hover { background: #1d4ed8; }
+      &:hover { background: #24564c; }
       &:disabled { opacity: 0.6; cursor: default; }
-      &:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+      &:focus-visible { outline: 2px solid #163d36; outline-offset: 2px; }
     }
   }
 }
+
+:host { display: block; min-width: 0; }
+.card { overflow-x: auto; }
+.card .muted { line-height: 1.5; }
+.card table { font-variant-numeric: tabular-nums; }
+@media (max-width: 620px) { .card .title-row, .card .search { flex-direction: column; align-items: stretch; } .card .facts { grid-template-columns: 1fr; } }

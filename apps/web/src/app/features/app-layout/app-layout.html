@@ -1,5 +1,10 @@
 <div class="layout">
-  <app-sidebar [items]="navItems()" [userName]="identity.userName()" (signOut)="signOut()" />
+  <app-sidebar
+    [items]="navItems()"
+    [userName]="identity.userName()"
+    [heading]="i18n.t('common.navigation')"
+    (signOut)="signOut()"
+  />
   <main class="content">
     <router-outlet />
   </main>

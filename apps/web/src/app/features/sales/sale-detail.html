@@ -1,0 +1,62 @@
+<section class="workspace">
+  <a class="back" routerLink="/app/sales">{{ i18n.t('sales.back') }}</a>
+  <header class="page-head"><div><h1>{{ i18n.t(id() ? 'sales.detail' : 'sales.new') }}</h1>@if (sale.hasValue()) { <p>{{ sale.value().reference }} · <span class="status">{{ i18n.t(statusKey(sale.value().status)) }}</span></p> }</div>@if (id()) { <button matButton="outlined" [disabled]="busy()" (click)="refresh()">{{ i18n.t('common.refresh') }}</button> }</header>
+  <p class="notice">{{ i18n.t('sales.notice') }}</p>
+  @if (errorKey(); as key) { <p class="error" role="alert">{{ i18n.t(key) }}</p> }
+  @if (saved()) { <p class="success" role="status">{{ i18n.t('sales.saved') }}</p> }
+  @if (id() && sale.error()) { <p class="error" role="alert">{{ i18n.t('sales.error.generic') }}</p> }
+  @else if (id() && !sale.hasValue()) { <p role="status">{{ i18n.t('sales.loading') }}</p> }
+  @else {
+    @if (editable()) {
+      <form class="toolbar" (submit)="find($event)"><mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.productSearch') }}</mat-label><input [disabled]="busy()" matInput type="search" [value]="search()" (input)="search.set(text($event))" /></mat-form-field><button matButton="outlined" type="submit">{{ i18n.t('sales.find') }}</button></form>
+      @if (products.error()) { <p class="error">{{ i18n.t('products.loadError') }}</p> }
+      @else if (products.hasValue()) {
+        <ul class="catalog-results">@for (p of products.value().products; track p.id) { <li><div>{{ p.name }}<small>{{ p.sku }} · {{ p.priceCents / 100 | number:'1.2-2':i18n.lang() }} RON @if (p.productType !== 'service') { · {{ i18n.t('sales.stock') }}: {{ p.stock | number:'1.0-3':i18n.lang() }} {{ unit(p.unitType) }} }</small></div><button matButton="text" type="button" [disabled]="busy()" (click)="add(p)">{{ i18n.t('sales.add') }}</button></li> } @empty { <li>{{ i18n.t('sales.noProducts') }}</li> }</ul>
+        <div class="actions"><button matButton="text" [disabled]="productPage() === 1" (click)="productPage.set(productPage()-1)">{{ i18n.t('common.previous') }}</button><button matButton="text" [disabled]="productPage()*10 >= products.value().total" (click)="productPage.set(productPage()+1)">{{ i18n.t('common.next') }}</button></div>
+      }
+      <form (submit)="$event.preventDefault(); save()">
+        @for (line of lines(); track line.productId; let i = $index) {
+          <article class="line-item"><div class="line-heading"><div><h3>{{ line.name }}</h3><small class="muted">{{ line.sku }} · {{ unit(line.unitType) }}</small></div><button matButton="text" type="button" [disabled]="busy()" (click)="remove(i)">{{ i18n.t('sales.remove') }}</button></div>
+          <div class="line-fields"><mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.quantity') }} ({{ unit(line.unitType) }})</mat-label><input [disabled]="busy()" matInput inputmode="decimal" [value]="line.quantity" (input)="changeLine(i, 'quantity', $event)" /></mat-form-field><mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.unitPrice') }}</mat-label><input [disabled]="busy()" matInput inputmode="decimal" [value]="line.price" (input)="changeLine(i, 'price', $event)" /></mat-form-field><mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.discount') }}</mat-label><input [disabled]="busy()" matInput inputmode="decimal" [value]="line.discount" (input)="changeLine(i, 'discount', $event)" /></mat-form-field></div>
+          @if (line.productType === 'service') {
+            <p class="stock-note muted">{{ i18n.t('inventory.untracked') }}</p>
+          } @else if (line.availableStock !== undefined) {
+            @let afterStock = stockAfterSale(line);
+            <div class="stock-preview" [class.insufficient]="afterStock !== null && afterStock < 0">
+              <div><span>{{ i18n.t('sales.stockBefore') }}</span><strong>{{ line.availableStock | number:'1.0-3':i18n.lang() }} {{ unit(line.unitType) }}</strong></div>
+              <span class="stock-arrow" aria-hidden="true">→</span>
+              <div><span>{{ i18n.t('sales.stockAfter') }}</span><strong>@if (afterStock !== null) { {{ afterStock | number:'1.0-3':i18n.lang() }} {{ unit(line.unitType) }} } @else { — }</strong></div>
+            </div>
+            @if (afterStock !== null && afterStock < 0) { <p class="stock-warning" role="status">{{ i18n.t('sales.insufficientPreview') }}</p> }
+          }
+          <mat-form-field appearance="outline" style="width:100%"><mat-label>{{ i18n.t('sales.override') }}</mat-label><input [disabled]="busy()" matInput [value]="line.override" (input)="changeLine(i, 'override', $event)" /></mat-form-field><p class="num">{{ lineTotal(line) / 100 | number:'1.2-2':i18n.lang() }} RON</p></article>
+        }
+        <div class="form-grid section"><mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.basis') }}</mat-label><select [disabled]="busy()" matNativeControl [value]="basis()" (change)="changeBasis($event)">@for (b of bases; track b) { <option [value]="b">{{ i18n.t(basisKey(b)) }}</option> }</select></mat-form-field><mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.note') }}</mat-label><input [disabled]="busy()" matInput maxlength="1000" [value]="note()" (input)="note.set(text($event)); saved.set(false); confirmation.set(null); dirty.set(true)" /></mat-form-field></div>
+        <dl class="summary"><div><dt>{{ i18n.t('sales.total') }}</dt><dd>{{ preview() / 100 | number:'1.2-2':i18n.lang() }}</dd></div></dl>
+        <div class="actions"><button matButton="filled" type="submit" [disabled]="busy() || !lines().length">{{ i18n.t(busy() ? 'sales.saving' : 'sales.save') }}</button><button matButton="outlined" type="button" [disabled]="busy() || !lines().length" (click)="save(true)">{{ i18n.t('sales.review') }}</button>@if (id()) { <button matButton="text" type="button" [disabled]="busy()" (click)="open('discard')">{{ i18n.t('sales.discard') }}</button> }</div>
+      </form>
+    } @else if (sale.hasValue()) {
+      @if (!identity.isTenantAdmin()) { <p class="hint">{{ i18n.t('sales.readOnly') }}</p> }
+      <dl class="summary"><div><dt>{{ i18n.t('sales.total') }}</dt><dd>{{ sale.value().totalCents / 100 | number:'1.2-2':i18n.lang() }}</dd></div><div><dt>{{ i18n.t('sales.returned') }}</dt><dd>{{ sale.value().returnedCents / 100 | number:'1.2-2':i18n.lang() }}</dd></div><div><dt>{{ i18n.t('sales.basis') }}</dt><dd>{{ i18n.t(basisKey(sale.value().priceBasis)) }}</dd></div></dl>
+      @if (sale.value().completedAt; as completed) { <p class="muted">{{ i18n.t('sales.completedAt') }}: {{ date(completed) }} · {{actor(sale.value().actor)}}</p> }
+      @if (sale.value().note) { <p>{{ sale.value().note }}</p> }
+      <div class="table-wrap"><table><thead><tr><th>{{ i18n.t('sales.product') }}</th><th class="num">{{ i18n.t('sales.quantity') }}</th><th class="num">{{ i18n.t('sales.unitPrice') }}</th><th class="num">{{ i18n.t('sales.discount') }}</th><th class="num">{{ i18n.t('sales.total') }}</th><th class="num">{{ i18n.t('sales.returnedQuantity') }}</th></tr></thead><tbody>@for (line of sale.value().lines; track line.id) { <tr><td>{{ line.name }}<small class="muted"> {{ line.sku }}</small></td><td class="num">{{ line.quantity | number:'1.0-3':i18n.lang() }} {{ unit(line.unitType) }}</td><td class="num">{{ line.unitPriceCents/100 | number:'1.2-2':i18n.lang() }}</td><td class="num">{{ line.discountCents/100 | number:'1.2-2':i18n.lang() }}</td><td class="num">{{ line.totalCents/100 | number:'1.2-2':i18n.lang() }}</td><td class="num">{{ line.returnedQuantity | number:'1.0-3':i18n.lang() }}</td></tr> }</tbody></table></div>
+      @if (correctable()) { <div class="actions"><button matButton="outlined" [disabled]="busy()" (click)="open('return')">{{ i18n.t('sales.return') }}</button><button matButton="text" [disabled]="busy()" (click)="open('cancel')">{{ i18n.t('sales.cancel') }}</button></div> }
+      <section class="section"><h2>{{ i18n.t('sales.history') }}</h2>@for (r of sale.value().returns; track r.id) { <article class="line-item"><h3>{{ i18n.t(r.kind === 'cancel' ? 'sales.status.cancelled' : 'sales.return') }}</h3><p>{{ date(r.createdAt) }} · {{ r.totalCents/100 | number:'1.2-2':i18n.lang() }} RON</p><p>{{i18n.t('sales.reference')}}: {{r.id}}</p><p>{{ r.reason }} · {{actor(r.actor)}}</p>@for(rl of r.lines;track rl.saleLineId){<p>{{lineName(rl.saleLineId)}} · {{rl.quantity|number:'1.0-3':i18n.lang()}} {{lineUnit(rl.saleLineId)}} · {{rl.amountCents/100|number:'1.2-2':i18n.lang()}} RON · {{rl.restock?i18n.t('sales.restock'):i18n.t('sales.noRestock')}}</p>}</article> } @empty { <p class="muted">{{ i18n.t('sales.noReturns') }}</p> }</section>
+    }
+
+    @if (confirmation(); as action) {
+      <section class="confirmation" tabindex="-1" aria-live="polite">
+        @if (action === 'complete') { <h2>{{ i18n.t('sales.review') }}</h2><p>{{ i18n.t('sales.completeHint') }}</p><strong>{{ preview()/100 | number:'1.2-2':i18n.lang() }} RON</strong> }
+        @else if (action === 'discard') { <h2>{{ i18n.t('sales.discard') }}</h2><p>{{ i18n.t('sales.discardHint') }}</p> }
+        @else {
+          <h2>{{ i18n.t(action === 'cancel' ? 'sales.cancelAll' : 'sales.return') }}</h2><p class="hint">{{ i18n.t('sales.correctionHint') }}</p>
+          @if (action === 'return' && sale.hasValue()) { @for (line of sale.value().lines; track line.id) { @if (line.quantity > line.returnedQuantity) { <div class="line-item"><h3>{{ line.name }}</h3><p>{{ i18n.t('sales.remaining') }}: {{ line.quantity-line.returnedQuantity | number:'1.0-3':i18n.lang() }} {{ unit(line.unitType) }}</p><mat-form-field appearance="outline"><mat-label>{{line.name}} · {{ i18n.t('sales.returnQuantity') }} ({{ unit(line.unitType) }})</mat-label><input [disabled]="busy()" matInput inputmode="decimal" [value]="returnAmounts()[line.id] || ''" (input)="returnQuantity(line.id, $event)" /></mat-form-field>@if (line.productType !== 'service') { <label class="check"><input type="checkbox" [checked]="returnRestock()[line.id] || false" (change)="returnStock(line.id, $event)" />{{ i18n.t('sales.restock') }}</label> }</div> } } }
+          <mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.reason') }}</mat-label><input [disabled]="busy()" matInput maxlength="500" [value]="reason()" (input)="reason.set(text($event))" /></mat-form-field>
+          @if (action === 'cancel') { <label class="check"><input type="checkbox" [checked]="restock()" (change)="restock.set(checked($event))" />{{ i18n.t('sales.restock') }}</label> }
+        }
+        <div class="actions"><button matButton="filled" [disabled]="busy()" (click)="confirm()">{{ i18n.t(action === 'complete' ? 'sales.confirm' : action === 'discard' ? 'sales.confirmDiscard' : action === 'cancel' ? 'sales.cancelConfirm' : 'sales.returnConfirm') }}</button><button matButton="text" [disabled]="busy()" (click)="confirmation.set(null)">{{ i18n.t('inventory.cancel') }}</button></div>
+      </section>
+    }
+  }
+</section>

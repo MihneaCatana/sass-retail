@@ -1,44 +1,96 @@
 .shell {
   min-height: 100vh;
   display: grid;
+  grid-template-columns: minmax(0, 1.13fr) minmax(24rem, 0.87fr);
   font-family: system-ui, sans-serif;
-  background: #f5f6f8;
-  padding: 1rem;
+  color: #152333;
+  background: #f8fafc;
 }
 
-/* margin:auto centers the card and degrades safely: when the card is taller
-   than the viewport the page scrolls normally instead of clipping the top
-   (grid place-items:center would clip it). */
+.story {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  overflow: hidden;
+  padding: clamp(1.5rem, 3.5vw, 3.5rem) clamp(1.5rem, 6vw, 7rem);
+  color: #f8fffb;
+  background: #163d36;
 
-.card {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgb(0 0 0 / 8%);
-  padding: 2rem 2.5rem;
-  text-align: left;
-  max-width: 26rem;
-  width: 100%;
+  &::after {
+    position: absolute;
+    width: 34rem;
+    height: 34rem;
+    right: -13rem;
+    bottom: -18rem;
+    border: 1px solid rgb(214 248 106 / 35%);
+    border-radius: 50%;
+    content: '';
+  }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: inherit;
+  font-size: 1.05rem;
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+
+  svg { width: 2rem; fill: none; stroke: #d6f86a; stroke-linecap: round; stroke-linejoin: round; stroke-width: 2; }
+}
+
+.story-copy {
+  max-width: 42rem;
+  margin: auto 0 clamp(2rem, 7vw, 6rem);
+  animation: arrive 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  .overline { margin: 0 0 1rem; color: #d6f86a; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+  h1 { margin: 0; max-width: 11ch; font-size: clamp(2.8rem, 5vw, 5.3rem); letter-spacing: -0.065em; line-height: 0.94; }
+  > p:last-child { max-width: 38ch; margin: 1.4rem 0 0; color: #c6d7d0; font-size: clamp(1rem, 1.3vw, 1.15rem); line-height: 1.55; }
+}
+
+.workspace-preview { position: relative; z-index: 1; width: min(34rem, 100%); overflow: hidden; border-radius: 0.9rem; background: #f8fffb; color: #183c36; box-shadow: 0 22px 45px rgb(2 17 13 / 32%); transform: rotate(-1.5deg); }
+.preview-bar { display: flex; align-items: center; gap: 0.35rem; height: 2.1rem; padding: 0 0.75rem; background: #e8f0ec; font-size: 0.65rem; }
+.preview-bar span { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: #b7c8bf; }.preview-bar b { margin-left: auto; font-weight: 650; }
+.preview-body { display: grid; grid-template-columns: 3.4rem 1fr; min-height: 12.5rem; }.preview-nav { padding: 1rem 0.85rem; background: #eaf5ed; }.preview-nav i { display: block; height: 0.45rem; margin-bottom: 1rem; border-radius: 0.25rem; background: #b7d1c3; }.preview-nav i:first-child { background: #4b7f61; }.preview-main { padding: 1.2rem; }.preview-title span { display: block; width: 7rem; height: 0.7rem; border-radius: 0.35rem; background: #163d36; }.preview-title small { display: block; margin-top: 0.45rem; color: #7a9489; font-size: 0.55rem; }.preview-panels { display: grid; grid-template-columns: 1.3fr 1fr; gap: 0.7rem; margin: 1.2rem 0; }.preview-panels span { height: 3.3rem; border-radius: 0.55rem; background: #e0f0e6; }.preview-panels span:first-child { background: #d6f86a; }.preview-list span { display: block; width: 100%; height: 0.45rem; margin-top: 0.55rem; border-radius: 0.2rem; background: #e2ece6; }.preview-list span:nth-child(2) { width: 82%; }.preview-list span:nth-child(3) { width: 61%; }
+.story-footer { margin: 1.75rem 0 0; color: #b6ccc2; font-size: 0.78rem; }
+
+.access { position: relative; display: grid; min-height: 100vh; padding: 1.5rem; background: #fcfdfd; }
+.lang-row { position: absolute; top: 1.5rem; right: 1.5rem; }
+
+.access-card {
+  width: min(100%, 25rem);
   margin: auto;
-  animation: card-rise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+  text-align: left;
+  animation: arrive 0.5s 0.08s cubic-bezier(0.16, 1, 0.3, 1) both;
 
-  h1 { margin: 0 0 0.5rem; font-size: 1.4rem; }
+  .welcome { margin: 0 0 0.7rem; color: #548178; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  h2 { margin: 0; font-size: clamp(2rem, 3vw, 2.55rem); letter-spacing: -0.055em; line-height: 1; }
+  .muted { color: #64756f; line-height: 1.55; }
 
   button {
-    margin-top: 1.5rem;
-    padding: 0.55rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    padding: 0.85rem 1rem 0.85rem 1.2rem;
     width: 100%;
     border: none;
-    border-radius: 8px;
-    background: #2563eb;
-    color: #fff;
+    border-radius: 0.65rem;
+    background: #163d36;
+    color: #f8fffb;
     font-size: 0.95rem;
-    font-weight: 500;
+    font-weight: 700;
     cursor: pointer;
 
-    &:hover { background: #1d4ed8; }
+    span { font-size: 1.2rem; transition: transform 0.2s ease; }
+    &:hover { background: #24564c; span { transform: translateX(3px); } }
 
     &:focus-visible {
-      outline: 2px solid #2563eb;
+      outline: 2px solid #163d36;
       outline-offset: 2px;
     }
   }
@@ -46,14 +98,14 @@
   .footer-note {
     margin: 1.25rem 0 0;
     padding-top: 1rem;
-    border-top: 1px solid #d1d5db;
+    border-top: 1px solid #dce7e1;
+    font-size: 0.9rem;
+    a { color: #1f6d5d; font-weight: 700; text-underline-offset: 0.2em; }
   }
-
-  .muted { color: #6b7280; }
 }
 
-@keyframes card-rise {
-  from { opacity: 0.96; transform: translateY(6px); }
+@keyframes arrive {
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
 }
 
@@ -62,14 +114,14 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  color: #6b7280;
+  color: #64756f;
   font-size: 0.95rem;
 
   .spinner {
     width: 1.1rem;
     height: 1.1rem;
-    border: 2px solid #d1d5db;
-    border-top-color: #2563eb;
+    border: 2px solid #dce7e1;
+    border-top-color: #163d36;
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -80,6 +132,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card { animation: none; }
+  .access-card, .story-copy { animation: none; }
   .spinner { animation: none; }
+}
+
+@media (max-width: 800px) {
+  .shell { display: flex; flex-direction: column; }
+  .access { order: -1; min-height: 29rem; }
+  .story { min-height: auto; padding-block: 1.35rem; }
+  .story-copy { margin: 1.8rem 0 0; }
+  .story-copy h1, .story-copy > p:last-child, .workspace-preview, .story-footer { display: none; }
 }

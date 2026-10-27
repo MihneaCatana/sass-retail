@@ -1,0 +1,36 @@
+<section class="workspace">
+  <header class="page-head"><div><h1>{{ i18n.t('sales.title') }}</h1><p class="muted">{{ i18n.t('sales.subtitle') }}</p></div>@if (identity.isTenantAdmin()) { <a matButton="filled" routerLink="/app/sales/new">{{ i18n.t('sales.new') }}</a> }</header>
+  <p class="notice">{{ i18n.t('sales.notice') }}</p>
+  @if(productFilter()){<p class="notice">{{i18n.t('sales.filteredProduct')}} <a routerLink="/app/sales">{{i18n.t('sales.clearFilter')}}</a></p>}
+  <form class="toolbar" (submit)="apply($event)">
+    <mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.search') }}</mat-label><input matInput type="search" [value]="filters().q" (input)="field('q', $event)" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.status') }}</mat-label><select matNativeControl [value]="filters().status" (change)="field('status', $event)"><option value="">{{ i18n.t('sales.status') }}</option>@for (status of statuses; track status) { <option [value]="status">{{ i18n.t(statusKey(status)) }}</option> }</select></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.from') }}</mat-label><input matInput type="date" lang="en-GB" [value]="filters().from" (input)="field('from', $event)" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>{{ i18n.t('sales.to') }}</mat-label><input matInput type="date" lang="en-GB" [value]="filters().to" (input)="field('to', $event)" /></mat-form-field>
+    <button matButton="outlined" type="submit">{{ i18n.t('sales.filter') }}</button>
+  </form>
+  @if (sales.error()) { <p class="error" role="alert">{{ i18n.t('sales.error.generic') }}</p><button matButton="outlined" (click)="sales.reload()">{{ i18n.t('sales.retry') }}</button> }
+  @else if (!sales.hasValue()) { <p role="status">{{ i18n.t('sales.loading') }}</p> }
+  @else if (sales.value().sales.length === 0) { <p>{{ i18n.t('sales.empty') }}</p> }
+  @else {
+    <app-data-table [ariaLabel]="i18n.t('sales.title')" [columns]="columns()" [rows]="sales.value().sales">
+      <ng-template appTableCell="reference" let-sale>
+        <a [routerLink]="['/app/sales', sale.id]">{{ sale.reference }}</a>
+      </ng-template>
+      <ng-template appTableCell="lines" let-sale>
+        <ul class="sale-line-summary">
+          @for (line of sale.lines; track line.id) {
+            <li><span>{{ line.name }}</span><strong>× {{ line.quantity | number:'1.0-3':i18n.lang() }} {{ unit(line.unitType) }}</strong></li>
+          }
+        </ul>
+      </ng-template>
+      <ng-template appTableCell="status" let-sale>
+        <span class="status">{{ i18n.t(statusKey(sale.status)) }}</span>
+      </ng-template>
+      <ng-template appTableCell="createdAt" let-sale>{{ date(sale.createdAt) }}</ng-template>
+      <ng-template appTableCell="totalCents" let-sale>{{ sale.totalCents / 100 | number:'1.2-2':i18n.lang() }} RON</ng-template>
+      <ng-template appTableCell="returnedCents" let-sale>{{ sale.returnedCents / 100 | number:'1.2-2':i18n.lang() }} RON</ng-template>
+    </app-data-table>
+  }
+  @if (sales.hasValue()) { <footer class="pager"><button matButton="outlined" [disabled]="page() <= 1 || sales.isLoading()" (click)="page.set(page() - 1)">{{ i18n.t('common.previous') }}</button><span>{{ i18n.t('sales.pagination', { page: page(), count: sales.value().total }) }}</span><button matButton="outlined" [disabled]="page() * 20 >= sales.value().total || sales.isLoading()" (click)="page.set(page() + 1)">{{ i18n.t('common.next') }}</button></footer> }
+</section>

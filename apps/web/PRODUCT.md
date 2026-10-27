@@ -32,7 +32,19 @@ Confirmed today (in the app):
 - Sign-in via Keycloak PKCE redirect; route guarding via auth guard.
 - Dev parity with production: same Docker images, no dev-only code paths.
 
-Planned roadmap (phased): inventory & product catalog, then sales & checkout, then staff/shift management.
+Inventory foundation is implemented: product/service/consumable catalog, measured
+quantities, stock movements/history/reversals, search, and sortable catalog columns.
+
+Implemented locally: internal sales drafts/completion with atomic inventory
+integration, returns/cancellation, effective-dated standard costs, and product
+performance with cost coverage and estimated gross profit. The demand planner and
+profit simulator were shelved on 2026-10-27 and removed from the app; their
+historical specifications remain in
+[Sales, inventory, and profitability](../../docs/features/sales/PRODUCT.md).
+Actual inventory valuation and realized profit remain gated on a chosen costing
+method and receipt-backed cost capture. Fiscal checkout integration and
+staff/shift management remain separate scope decisions. Local verification does
+not establish browser approval, pilot demand, or production readiness.
 
 Technical constraints that shape any UI work:
 

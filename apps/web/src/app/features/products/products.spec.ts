@@ -21,6 +21,8 @@ const page: ProductPage = {
       sku: 'ESP-1KG',
       priceCents: 1899,
       stock: 25,
+      unitType: 'kg',
+      productType: 'endproduct',
       createdAt: '2026-01-01T10:00:00.000Z',
       updatedAt: '2026-01-05T10:00:00.000Z'
     }
@@ -70,6 +72,22 @@ function setup(
 }
 
 describe('Products', () => {
+  it('requests server-side ascending, descending, and default sorting from column headers', async () => {
+    const { fixture, requests } = setup((req) => new HttpResponse({ body: req.url === '/api/me'
+      ? { sub: 'test', roles: ['tenant-admin'] }
+      : req.url === '/api/tenants/current' ? { name: 'Test', slug: 'test' } : page }));
+    await fixture.whenStable();
+    const clickHeader = () => (fixture.nativeElement.querySelector('thead th:first-child [role="button"]') as HTMLElement).click();
+    clickHeader();
+    await fixture.whenStable();
+    expect(requests.at(-1)?.url).toContain('&sort=name&direction=asc');
+    clickHeader();
+    await fixture.whenStable();
+    expect(requests.at(-1)?.url).toContain('&sort=name&direction=desc');
+    clickHeader();
+    await fixture.whenStable();
+    expect(requests.at(-1)?.url).not.toContain('&sort=');
+  });
   it('lists the tenant products with pagination info', async () => {
     const { fixture, requests } = setup((req) => {
       if (req.url === '/api/me') {

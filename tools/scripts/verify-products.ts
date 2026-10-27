@@ -61,12 +61,12 @@ async function main(): Promise<void> {
   const updated = await fetch(`${API}/${createdBody.id}`, {
     method: "PUT",
     headers: { ...auth(admin.accessToken), "Content-Type": "application/json" },
-    body: JSON.stringify({ name: "Espresso beans 1kg", sku: "ESP-1KG", priceCents: 1999, stock: 30 })
+    body: JSON.stringify({ name: "Espresso beans 1kg", sku: "ESP-1KG", priceCents: 1999, stock: 25 })
   });
   const updatedBody = (await updated.json()) as { priceCents: number; stock: number };
   assert(
-    updated.status === 200 && updatedBody.priceCents === 1999 && updatedBody.stock === 30,
-    "admin updates the product"
+    updated.status === 200 && updatedBody.priceCents === 1999 && updatedBody.stock === 25,
+    "admin updates product metadata without overwriting stock"
   );
 
   const duplicate = await fetch(API, {

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Romanian SMB Product Owner"
+  short_description: "Prioritize value and scope Romanian SMB features"
+  default_prompt: "Use $romanian-smb-product-owner to turn Storeboard's strongest Romanian SMB opportunity into a prioritized MVP with acceptance criteria and measurable business value."

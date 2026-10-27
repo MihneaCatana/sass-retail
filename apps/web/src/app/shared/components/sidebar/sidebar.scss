@@ -1,77 +1,48 @@
+:host { display: block; min-width: 0; }
+
 .sidebar {
-  /* Full-height navigation column: spans the whole viewport and stays put
-     while the content area scrolls. */
   position: sticky;
   top: 0;
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border-right: 1px solid #e5e7eb;
-  padding: 1.25rem 1rem;
-
-  .brand {
-    margin: 0 0 1.25rem;
-    padding: 0 0.9rem;
-    font-weight: 700;
-    font-size: 1.05rem;
-    color: #111827;
-  }
-
-  .heading {
-    margin: 0 0 0.35rem;
-    padding: 0 0.9rem;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #6b7280;
-  }
-
-  nav {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .user-panel {
-    margin-top: auto;
-    padding-top: 0.75rem;
-    border-top: 1px solid #e5e7eb;
-
-    .user-name {
-      margin: 0 0 0.5rem;
-      padding: 0 0.9rem;
-      font-size: 0.8rem;
-      color: #6b7280;
-      overflow-wrap: anywhere;
-    }
-
-    button {
-      width: 100%;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 8px;
-      background: #2563eb;
-      color: #fff;
-      cursor: pointer;
-
-      &:hover { background: #1d4ed8; }
-
-      &:focus-visible {
-        outline: 2px solid #2563eb;
-        outline-offset: 2px;
-      }
-    }
+  padding: 2rem 1rem 1.25rem;
+  background: #163d36;
+  color: #f8fffb;
+}
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; }
+.brand { margin: 0 0 2.5rem; padding: 0 0.9rem; font-weight: 700; font-size: 1.3rem; letter-spacing: -0.04em; }
+.menu-toggle { display: none; color: #f8fffb; }
+.menu-toggle svg { width: 1.4rem; height: 1.4rem; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.menu-content { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
+nav { display: flex; flex-direction: column; gap: 0.25rem; }
+.heading { margin: 0 0 0.8rem; padding: 0 0.9rem; color: #bed5c9; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.user-panel {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #3d6055;
+  app-language-switcher { display: block; margin-bottom: 0.9rem; }
+  .user-name { margin: 0 0 0.75rem; padding: 0 0.9rem; color: #c5d8cf; font-size: 0.8rem; overflow-wrap: anywhere; }
+  button {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 1px solid #658578;
+    border-radius: 8px;
+    background: transparent;
+    color: #f8fffb;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    &:hover { background: #24564c; }
   }
 }
+.sidebar button:focus-visible { outline: 2px solid #d6f86a; outline-offset: 3px; }
 
-/* On small screens the sidebar becomes a normal top block (app.scss stacks
-   the layout), so it must not stay sticky/full-height there. */
 @media (max-width: 720px) {
-  .sidebar {
-    position: static;
-    height: auto;
-    border-right: none;
-    border-bottom: 1px solid #e5e7eb;
-  }
+  .sidebar { position: relative; height: auto; padding: 0.65rem 1rem; }
+  .brand { margin: 0; padding: 0 0.25rem; }
+  .menu-toggle { display: inline-flex; }
+  .menu-content { display: none; }
+  .menu-open .menu-content { display: flex; padding: 1.25rem 0 0.5rem; }
+  .user-panel { margin-top: 1.25rem; }
 }

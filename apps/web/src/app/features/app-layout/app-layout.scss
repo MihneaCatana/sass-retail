@@ -1,9 +1,9 @@
 .layout {
   display: grid;
-  grid-template-columns: 15rem 1fr;
+  grid-template-columns: 15rem minmax(0, 1fr);
   min-height: 100vh;
   font-family: system-ui, sans-serif;
-  background: #f5f6f8;
+  background: #f7faf8;
 }
 
 .content {
@@ -16,3 +16,5 @@
     grid-template-columns: 1fr;
   }
 }
+
+.content { min-width: 0; padding: clamp(1rem, 3vw, 2.5rem); }

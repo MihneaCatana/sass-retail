@@ -20,7 +20,10 @@ export const appConfig: ApplicationConfig = {
         postLogoutRedirectUri: window.location.origin,
         responseType: 'code',
         scope: 'openid profile email',
-        useRefreshToken: true
+        silentRenew: true,
+        useRefreshToken: true,
+        renewTimeBeforeTokenExpiresInSeconds: 30,
+        useRefreshTokenLock: true
       }
     })
   ]

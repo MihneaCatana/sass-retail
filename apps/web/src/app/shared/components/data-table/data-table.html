@@ -1,0 +1,83 @@
+<div class="table-tools">
+  <details class="column-picker">
+    <summary class="column-picker-button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 4.5h4v15h-4zM10 4.5h4v15h-4zM16.5 4.5h4v15h-4z" /></svg>
+      <span>{{ i18n.t('table.columns') }}</span>
+    </summary>
+    <div class="column-picker-panel" role="group" [attr.aria-label]="i18n.t('table.columnSettings')">
+      @for (col of columns(); track col.key) {
+        @if (col.hideable !== false) {
+          <label class="column-choice">
+            <input
+              type="checkbox"
+              [attr.aria-label]="col.label || i18n.t('products.colActions')"
+              [checked]="isColumnVisible(col.key)"
+              [disabled]="!canHideColumn(col.key)"
+              (change)="toggleColumn(col.key, $event)"
+            />
+            <span>{{ col.label || i18n.t('products.colActions') }}</span>
+          </label>
+        }
+      }
+    </div>
+  </details>
+</div>
+
+<div class="table-viewport" role="region" tabindex="0" [attr.aria-label]="ariaLabel()">
+  <table class="data-table">
+    <thead>
+      <tr>
+        @for (col of visibleColumns(); track col.key) {
+          <th
+            scope="col"
+            [attr.aria-sort]="col.sortable ? sortState(col.key) : null"
+            [class.num]="col.align === 'right'"
+            [class.nowrap]="col.nowrap"
+            [style.width]="col.width"
+            [style.min-width]="col.minWidth"
+          >
+            @if (col.sortable) {
+              <button class="sort-button" type="button" (click)="toggleSort(col.key)">
+                <span>{{ col.label }}</span>
+                <svg class="sort-icon" [class.active]="sortActive() === col.key && !!sortDirection()" viewBox="0 0 16 16" aria-hidden="true">
+                  @if (sortActive() === col.key && sortDirection() === 'asc') {
+                    <path d="M8 13V3m-4 4 4-4 4 4" />
+                  } @else if (sortActive() === col.key && sortDirection() === 'desc') {
+                    <path d="M8 3v10m-4-4 4 4 4-4" />
+                  } @else {
+                    <path d="m4 6 4-4 4 4M4 10l4 4 4-4" />
+                  }
+                </svg>
+              </button>
+            } @else {
+              <span>{{ col.label }}</span>
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row) {
+        <tr>
+          @for (col of visibleColumns(); track col.key) {
+            <td
+              [class.num]="col.align === 'right'"
+              [class.nowrap]="col.nowrap"
+              [style.width]="col.width"
+              [style.min-width]="col.minWidth"
+            >
+              @if (cellFor(col.key); as cell) {
+                <ng-container
+                  [ngTemplateOutlet]="cell.templateRef"
+                  [ngTemplateOutletContext]="{ $implicit: row }"
+                />
+              } @else {
+                {{ rowValue(row, col.key) }}
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

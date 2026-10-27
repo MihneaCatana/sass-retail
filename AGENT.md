@@ -8,7 +8,7 @@ Multi-tenant SaaS for SMBs (retail domain). **Schema-per-tenant** PostgreSQL. Mo
 
 ## Stack
 
-- **Monorepo**: pnpm workspaces - `apps/api` (Express 5 + TS), `apps/web` (Angular), `packages/shared-types` (shared DTOs), `packages/env` (zod env), `packages/provisioning` (tenant lifecycle)
+- **Monorepo**: pnpm workspaces - `apps/api` (Express 5 + TS), `apps/web` (Angular + Angular Material 3, see apps/web/DESIGN.md), `packages/shared-types` (shared DTOs), `packages/env` (zod env), `packages/provisioning` (tenant lifecycle)
 - **DB**: PostgreSQL 16 - one schema per tenant (`t_<slug>`), platform tables in `public`; data access via Drizzle - tenant-scoped queries bind Drizzle to the `withTenantDb` transaction client, public-schema reads/writes use a pool-level instance (`db/drizzle.ts`); migrations stay on node-pg-migrate
 - **IAM**: Keycloak (single realm `retail`; `tenant_slug` claim via protocol mapper + declarative user profile)
 - **Docker**: one image per app, **identical in dev and prod** - only env vars differ
@@ -23,6 +23,23 @@ Multi-tenant SaaS for SMBs (retail domain). **Schema-per-tenant** PostgreSQL. Mo
 5. Shared API contracts live in `@retail/shared-types`; shared tenant lifecycle in `@retail/provisioning`. No duplicated DTOs or provisioning logic.
 6. Env vars are validated by zod at startup; each entrypoint declares the credentials it needs via `requireEnvVar` (see apps/api).
 7. Known deferred security/quality debt lives in `TECH_DEBT.md` - review it before starting each phase.
+
+## Designer-agent guidance
+
+For Storeboard UI design, implementation, or review, use `$storeboard-designer`
+when available. The repository copy is
+`docs/designer-skills/storeboard-designer/SKILL.md` and can be read directly when
+the installed skill is unavailable. Read `apps/web/DESIGN.md` before component
+work; it is the shared guideline source. Runtime tokens live in
+`apps/web/src/styles.scss`; `.impeccable/design.json` contains preview extensions.
+Keep English/Romanian content, mobile navigation, and interaction states aligned.
+
+## Frontend QA agents
+
+For live frontend feature testing, use `$storeboard-frontend-qa` when available,
+or read `docs/qa-skills/storeboard-frontend-qa/SKILL.md` directly. Test through
+the UI using authorized test data; never store credentials in repo artifacts.
+Report observed results, limitations, and created test records in `docs/qa/`.
 
 ## Commands
 
@@ -66,6 +83,7 @@ pnpm --filter @retail/tools verify:onboarding                 # signup -> PKCE l
 ## Gotchas (learned in Phases 1-4.5)
 
 - Docker only honors the **root** `.dockerignore` - never rely on per-app ones.
+- The `web` container serves a static Angular build (no volume mount, no hot reload). **Every time the UI (`apps/web`) changes, rebuild + recreate the web container** (`docker compose --env-file ../.env up -d --build web`), then hard-refresh the browser — otherwise you keep seeing the old bundle.
 - Outer nginx resolves upstream names at startup; after recreating `api`/`web` containers, `docker restart retail-nginx`.
 - pino "transports" (worker threads) don't survive esbuild bundling - use plain streams.
 - Every new `packages/*` an app depends on must be added to that app's Dockerfile (`COPY <pkg>/package.json` + `COPY <pkg>`), or esbuild fails to resolve it in the image.
@@ -88,4 +106,8 @@ pnpm --filter @retail/tools verify:onboarding                 # signup -> PKCE l
 - **Platform console (2026-10-19)**: TICKET-111 - platform-admin tenant registry (list + detail with audit trail, API + web); `/app` shell refactor (guards, IdentityStore, Signal Forms signup, template split, silent auth handoff); Keycloak login theme polish. Angular agent skills vendored under `.github/skills`. See `docs/tickets/DONE.md` for the full log.
 - **Phase 5 - First business module (done, 2026-10-19)**: products/inventory CRUD as the template for all domain modules (routes -> service -> repository via withTenantDb); reads for tenant members, mutations gated to tenant-admin; isolation test extended to products; `verify:products` e2e script.
 - Phase 6 - Hardening: distributed rate limiting, security headers/CSP, backups, Keycloak production mode, scoped onboarding client, secret store (see TECH_DEBT.md).
+- **Inventory foundation (done, 2026-10-25):** TICKET-112 adds exact quantities, stock movement ledger/reversals/retry protection, and service separation. The Keycloak subject-scope prerequisite and frontend QA fixes are complete. See `docs/plans/inventory-foundation.md` and `docs/qa/2026-10-25-qa-fixes.md`.
+- **Sales implementation (validation, 2026-10-25):** TICKET-113 implements internal sales, inventory integration, corrections, standard cost snapshots, and estimated product performance. See `docs/plans/sales-implementation.md`. Actual realized costing and customer rollout gates remain open.
+- **Simulator decision (2026-10-27):** The demand planner and profit simulator were shelved and removed from navigation and active routes. Their old URLs redirect to the sales list; planning API logic and simulator UI code are removed. Product/design documents remain as historical proposals. The `QA-DP-20261026-*` synthetic catalog and sale records remain in tenant `lenovo` and continue to affect stock and reports.
+- **Workspace module access (2026-10-27):** Platform admins can manage workspace grants for inventory, sales, and sales insights. Existing/new tenants keep current access by default; module access is enforced by frontend navigation/routes and tenant APIs. See `docs/plans/workspace-module-access.md`.
 

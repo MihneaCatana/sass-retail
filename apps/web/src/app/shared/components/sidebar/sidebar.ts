@@ -1,4 +1,7 @@
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { I18nService } from '../../../core/i18n/i18n';
+import { LanguageSwitcher } from '../language-switcher/language-switcher';
 import { NavItem } from '../nav-item/nav-item';
 
 export interface SidebarNavItem {
@@ -13,11 +16,18 @@ export interface SidebarNavItem {
  */
 @Component({
   selector: 'app-sidebar',
-  imports: [NavItem],
+  imports: [LanguageSwitcher, NavItem, MatButtonModule],
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.scss'
 })
 export class Sidebar {
+  protected readonly i18n = inject(I18nService);
+  protected readonly menuOpen = signal(false);
+
+  protected closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
   readonly heading = input('Navigation');
   readonly items = input.required<SidebarNavItem[]>();
   readonly userName = input('');

@@ -73,7 +73,9 @@ describe('TenantDetail', () => {
 
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('Acme');
     expect(fixture.nativeElement.textContent).toContain('t_acme');
-    expect(fixture.nativeElement.textContent).toContain('suspended');
+    // The badge renders the human-readable, localized status label
+    // ('status.suspended' → "Suspended"), not the raw API enum value.
+    expect(fixture.nativeElement.textContent).toContain('Suspended');
     expect(fixture.nativeElement.textContent).toContain('tenant.created');
   });
 

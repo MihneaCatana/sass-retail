@@ -1,12 +1,16 @@
 import { Service, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import type { LoginResponse } from 'angular-auth-oidc-client';
 import type { Observable } from 'rxjs';
+import { first } from 'rxjs';
 
 /** Thin wrapper over the OIDC library — the only place that touches it directly. */
 @Service()
 export class AuthService {
   private readonly oidcSecurityService = inject(OidcSecurityService);
+  private readonly router = inject(Router);
+  private expiringSession = false;
 
   readonly isAuthenticated$ = this.oidcSecurityService.isAuthenticated$;
   readonly userData$ = this.oidcSecurityService.userData$;
@@ -25,6 +29,16 @@ export class AuthService {
     // (no end-session redirect to Keycloak, no local state reset).
     this.oidcSecurityService.logoff().subscribe({
       error: (err) => console.error('Logout failed', err)
+    });
+  }
+
+  /** Clears a rejected API session locally and routes the user to sign-in. */
+  expireSession(): void {
+    if (this.expiringSession) return;
+    this.expiringSession = true;
+    this.oidcSecurityService.logoffLocal();
+    this.oidcSecurityService.isAuthenticated$.pipe(first((state) => !state.isAuthenticated)).subscribe(() => {
+      void this.router.navigateByUrl('/', { replaceUrl: true });
     });
   }
 }

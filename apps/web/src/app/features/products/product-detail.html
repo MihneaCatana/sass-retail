@@ -1,0 +1,45 @@
+<main class="product-detail">
+  <a routerLink="/app/products" class="back">{{ i18n.t('productEdit.back') }}</a>
+
+  @if (product.error()) {
+    <p class="error" role="alert">{{ i18n.t('productEdit.error.loadFailed') }}</p>
+    <button matButton="outlined" type="button" (click)="refresh()">{{ i18n.t('common.refresh') }}</button>
+  } @else if (!product.hasValue()) {
+    <p class="muted">{{ i18n.t('productEdit.loading') }}</p>
+  } @else {
+    @let p = product.value();
+    <header class="detail-header">
+      <div class="product-heading">
+        <div>
+          <h1>{{ p.name }}</h1>
+          <p class="product-meta">
+            <code>{{ p.sku }}</code>
+            <span>{{ i18n.t(typeKey(p.productType)) }}</span>
+            <span>{{ p.priceCents / 100 | number:'1.2-2':i18n.lang() }} RON</span>
+          </p>
+        </div>
+        @if (identity.isTenantAdmin()) {
+          <a matButton="outlined" [routerLink]="['/app/products', p.id, 'edit']">{{ i18n.t('common.edit') }}</a>
+        }
+      </div>
+    </header>
+
+    <section class="detail-section">
+      <header class="section-heading">
+        <h2>{{ i18n.t('inventory.title') }}</h2>
+        <p>{{ i18n.t('productDetail.stockDescription') }}</p>
+      </header>
+      <app-product-stock [id]="id()" [embedded]="true" />
+    </section>
+
+    @if (identity.hasModule('sales-insights')) {
+    <section class="detail-section">
+      <header class="section-heading">
+        <h2>{{ i18n.t('sales.costs') }}</h2>
+        <p>{{ i18n.t('productDetail.costDescription') }}</p>
+      </header>
+      <app-product-costs [product]="p" [embedded]="true" />
+    </section>
+    }
+  }
+</main>

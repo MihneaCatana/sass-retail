@@ -1,0 +1,188 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.table-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.column-picker { position: relative; }
+.column-picker > summary { list-style: none; }
+.column-picker > summary::-webkit-details-marker { display: none; }
+
+.column-picker-button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 0.5rem;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover { background: var(--mat-sys-surface-container-low); }
+  &:focus-visible { outline: 2px solid var(--mat-sys-primary); outline-offset: 2px; }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.5;
+  }
+}
+
+.column-picker-panel {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  width: max-content;
+  min-width: 13rem;
+  max-width: min(20rem, calc(100vw - 2rem));
+  padding: 0.4rem;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 0.65rem;
+  background: var(--mat-sys-surface);
+  box-shadow: 0 0.5rem 1.5rem rgb(21 35 51 / 14%);
+}
+
+.column-choice {
+  display: flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.35rem;
+  color: var(--mat-sys-on-surface);
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover { background: var(--mat-sys-surface-container-low); }
+
+  input {
+    width: 1rem;
+    height: 1rem;
+    flex: none;
+    margin: 0;
+    accent-color: var(--mat-sys-primary);
+  }
+
+  input:disabled { cursor: not-allowed; }
+}
+
+.table-viewport {
+  overflow-x: auto;
+  border: 1px solid var(--mat-sys-outline-variant);
+  border-radius: 0.75rem;
+  background: var(--mat-sys-surface);
+  overscroll-behavior-inline: contain;
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 3px;
+  }
+}
+
+.data-table {
+  width: 100%;
+  min-width: 58rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--mat-sys-on-surface);
+  font-size: 0.9rem;
+
+  th,
+  td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  th {
+    background: var(--mat-sys-surface-container-low);
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  th:first-child { border-start-start-radius: 0.7rem; }
+  th:last-child { border-start-end-radius: 0.7rem; }
+
+  th[aria-sort='ascending'],
+  th[aria-sort='descending'] {
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+  }
+
+  td {
+    border-top: 1px solid var(--mat-sys-outline-variant);
+    line-height: 1.45;
+  }
+
+  tbody tr:hover td {
+    background: var(--mat-sys-surface-container-low);
+  }
+
+  tbody td:first-child { font-weight: 650; }
+
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .nowrap { white-space: nowrap; }
+}
+
+.sort-button {
+  display: inline-flex;
+  width: 100%;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+
+  &:hover { color: var(--mat-sys-primary); }
+
+  &:focus-visible {
+    outline: 2px solid var(--mat-sys-primary);
+    outline-offset: 2px;
+    border-radius: 0.2rem;
+  }
+}
+
+th.num .sort-button { justify-content: flex-end; }
+
+.sort-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+  opacity: 0.45;
+
+  &.active {
+    color: var(--mat-sys-primary);
+    opacity: 1;
+  }
+}

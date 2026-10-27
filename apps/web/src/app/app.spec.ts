@@ -71,9 +71,9 @@ describe('App (unauthenticated)', () => {
     await TestBed.inject(Router).navigateByUrl('/');
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Sign in to your workspace');
-    expect(compiled.querySelector('button')?.textContent).toContain('Sign in');
-    expect(compiled.querySelector('a')?.textContent).toContain('Create your workspace');
+    expect(compiled.querySelector('.access-card h2')?.textContent).toContain('Sign in to your workspace');
+    expect(compiled.querySelector('.access-card button')?.textContent).toContain('Sign in');
+    expect(compiled.querySelector('a[href="/signup"]')?.textContent).toContain('Create your workspace');
   });
 
   it('should render the signup form at /signup', async () => {
@@ -81,7 +81,7 @@ describe('App (unauthenticated)', () => {
     await TestBed.inject(Router).navigateByUrl('/signup');
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Create your workspace');
+    expect(compiled.querySelector('.join-panel h1')?.textContent).toContain('Create your workspace');
     expect(compiled.querySelector('button[type="submit"]')?.textContent).toContain('Create workspace');
   });
 });
@@ -145,7 +145,7 @@ describe('App (signed in as platform admin)', () => {
     expect(fixture.nativeElement.querySelector('app-sidebar')).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Home');
     expect(fixture.nativeElement.textContent).toContain('All tenants');
-    expect(fixture.nativeElement.textContent).toContain('platform-admin');
+    expect(fixture.nativeElement.textContent).toContain('Your account');
   });
 
   it('navigates to the tenants page and lists tenants (regression: outlet inside the signed-in shell)', async () => {
@@ -219,7 +219,7 @@ describe('App (post-login redirect)', () => {
     const router = TestBed.inject(Router);
     await router.navigateByUrl('/');
     await fixture.whenStable();
-    expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain(
+    expect(fixture.nativeElement.querySelector('.access-card h2')?.textContent).toContain(
       'Sign in to your workspace'
     );
 
@@ -286,6 +286,24 @@ describe('App (sign-in splash while the auth check is pending)', () => {
     // /app (or the sign-in card appears if there is no session).
     expect(fixture.nativeElement.textContent).toContain('Signing you in…');
     expect(fixture.nativeElement.textContent).not.toContain('Sign in to your workspace');
+  });
+
+  it('waits for callback completion before navigating after authentication is published', async () => {
+    authState.next({ isAuthenticated: false });
+    const fixture = TestBed.createComponent(App);
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/');
+    await fixture.whenStable();
+
+    authState.next({ isAuthenticated: true });
+    await fixture.whenStable();
+    expect(router.url).toBe('/');
+
+    authCheck$.next(null);
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(router.url).toBe('/app/home');
+    expect(fixture.nativeElement.querySelector('app-sidebar')).not.toBeNull();
   });
 });
 

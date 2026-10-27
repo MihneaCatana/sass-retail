@@ -1,15 +1,45 @@
 <main class="shell">
-  @if (showSignInCard()) {
-  <section class="card">
-    <h1>Sign in to your workspace</h1>
-    <p class="muted">You'll be taken to a secure page to enter your password.</p>
-    <button type="button" (click)="login()">Sign in</button>
-    <p class="muted footer-note">New here? <a routerLink="/signup">Create your workspace</a></p>
+  <section class="story" [attr.aria-label]="i18n.t('signin.overview')">
+    <a class="brand" routerLink="/" [attr.aria-label]="i18n.t('common.brandHome')">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 11.5 10 6h12l3 5.5v3A3.5 3.5 0 0 1 21.5 18a3.5 3.5 0 0 1-5.5-1.4A3.5 3.5 0 0 1 10.5 18 3.5 3.5 0 0 1 7 14.5v-3Z"/><path d="M9.5 18v8h13v-8M13 26v-5h6v5"/></svg>
+      <span>storeboard</span>
+    </a>
+    <div class="story-copy">
+      <p class="overline">{{ i18n.t('signin.tagline') }}</p>
+      <h1>{{ i18n.t('signin.headline') }}</h1>
+      <p>{{ i18n.t('signin.story') }}</p>
+    </div>
+    <div class="workspace-preview" [attr.aria-label]="i18n.t('signin.preview')">
+      <div class="preview-bar"><span></span><span></span><span></span><b>{{ i18n.t('signin.monday') }}</b></div>
+      <div class="preview-body">
+        <div class="preview-nav"><i></i><i></i><i></i><i></i></div>
+        <div class="preview-main">
+          <div class="preview-title"><span></span><small>{{ i18n.t('signin.glance') }}</small></div>
+          <div class="preview-panels"><span></span><span></span></div>
+          <div class="preview-list"><span></span><span></span><span></span></div>
+        </div>
+      </div>
+    </div>
+    <p class="story-footer">{{ i18n.t('signin.privacy') }}</p>
   </section>
-} @else {
-    <section class="splash" role="status" aria-busy="true">
-      <span class="spinner" aria-hidden="true"></span>
-      <span>Signing you in…</span>
-    </section>
-  }
+
+  <section class="access">
+    <div class="lang-row"><app-language-switcher /></div>
+    @if (showSignInCard()) {
+      <div class="access-card">
+        <p class="welcome">{{ i18n.t('signin.welcome') }}</p>
+        <h2>{{ i18n.t('signin.title') }}</h2>
+        <p class="muted">{{ i18n.t('signin.subtitle') }}</p>
+        <button type="button" (click)="login()">{{ i18n.t('common.signIn') }} <span aria-hidden="true">→</span></button>
+        <p class="muted footer-note">
+          {{ i18n.t('signin.newHere') }} <a routerLink="/signup">{{ i18n.t('signin.createWorkspace') }}</a>
+        </p>
+      </div>
+    } @else {
+      <section class="splash" role="status" aria-busy="true">
+        <span class="spinner" aria-hidden="true"></span>
+        <span>{{ i18n.t('signin.signingIn') }}</span>
+      </section>
+    }
+  </section>
 </main>
