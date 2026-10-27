@@ -1,3 +1,15 @@
+@if (identity.isPlatformAdmin()) {
+  <section class="dashboard">
+    <header class="page-header">
+      <div>
+        <p class="overline">{{ i18n.t('home.workspace') }}</p>
+        <h1>{{ i18n.t('home.platformTitle') }}</h1>
+        <p class="muted">{{ i18n.t('home.platformIntro') }}</p>
+      </div>
+      <a class="primary-action" routerLink="/app/platform/tenants">{{ i18n.t('home.openTenantRegistry') }} <span aria-hidden="true">→</span></a>
+    </header>
+  </section>
+} @else {
 <section class="dashboard">
   <header class="page-header">
     <div>
@@ -11,15 +23,15 @@
       </h1>
       <p class="muted">{{ i18n.t('home.intro') }}</p>
     </div>
-    @if (identity.hasModule('inventory')) {
+    @if (!identity.isPlatformAdmin() && identity.hasModule('inventory')) {
       <a class="primary-action" routerLink="/app/products">{{ i18n.t('home.openCatalog') }} <span aria-hidden="true">→</span></a>
-    } @else if (identity.hasModule('sales')) {
+    } @else if (!identity.isPlatformAdmin() && identity.hasModule('sales')) {
       <a class="primary-action" routerLink="/app/sales">{{ i18n.t('sales.title') }} <span aria-hidden="true">→</span></a>
     }
   </header>
 
   <div class="signal-row">
-    @if (identity.hasModule('inventory')) {
+    @if (!identity.isPlatformAdmin() && identity.hasModule('inventory')) {
       <article class="signal ready">
         <span class="signal-mark" aria-hidden="true">✓</span>
         <div><strong>{{ i18n.t('home.catalogReady') }}</strong><p>{{ i18n.t('home.catalogSummary') }}</p></div>
@@ -32,14 +44,14 @@
   </div>
 
   <section class="workspace-grid" [attr.aria-label]="i18n.t('home.areas')">
-    @if (identity.hasModule('sales')) {
+    @if (!identity.isPlatformAdmin() && identity.hasModule('sales')) {
     <a class="feature primary-feature sales-feature" routerLink="/app/sales">
       <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l4-4 3 2 5-6"/><path d="M16 7h3v3"/></svg></span>
       <div><p class="feature-status">{{ i18n.t('home.available') }}</p><h2>{{ i18n.t('sales.title') }}</h2><p>{{ i18n.t('sales.subtitle') }}</p></div>
       <span class="feature-arrow" aria-hidden="true">→</span>
     </a>
     }
-    @if (identity.hasModule('inventory')) {
+    @if (!identity.isPlatformAdmin() && identity.hasModule('inventory')) {
     <a class="feature primary-feature" routerLink="/app/products">
       <span class="feature-icon catalog-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7.5 6.5 4h11L20 7.5v2.25a2.75 2.75 0 0 1-4.5 2.12A2.75 2.75 0 0 1 12 12a2.75 2.75 0 0 1-3.5-.13A2.75 2.75 0 0 1 4 9.75V7.5Z"/><path d="M6 12v8h12v-8M10 20v-4h4v4"/></svg></span>
       <div><p class="feature-status">{{ i18n.t('home.available') }}</p><h2>{{ i18n.t('home.catalog') }}</h2><p>{{ i18n.t('home.catalogDescription') }}</p></div>
@@ -67,18 +79,21 @@
   } @else if (identity.me.error()) {
     <p class="error">{{ i18n.t('home.identityError') }}</p>
   }
-  @if (identity.tenant.hasValue()) {
-    <p class="muted">{{ i18n.t('home.tenantLabel') }} <strong>{{ identity.tenant.value().slug }}</strong></p>
-  } @else if (identity.tenant.error()) {
-    <p class="error">
-      {{
-        identity.tenant.statusCode() === 403
-          ? i18n.t('home.noTenant')
-          : i18n.t('home.tenantError')
-      }}
-    </p>
-  } @else {
-    <p class="muted">{{ i18n.t('common.loadingTenant') }}</p>
+  @if (!identity.isPlatformAdmin()) {
+    @if (identity.tenant.hasValue()) {
+      <p class="muted">{{ i18n.t('home.tenantLabel') }} <strong>{{ identity.tenant.value().slug }}</strong></p>
+    } @else if (identity.tenant.error()) {
+      <p class="error">
+        {{
+          identity.tenant.statusCode() === 403
+            ? i18n.t('home.noTenant')
+            : i18n.t('home.tenantError')
+        }}
+      </p>
+    } @else {
+      <p class="muted">{{ i18n.t('common.loadingTenant') }}</p>
+    }
   }
   </section>
 </section>
+}

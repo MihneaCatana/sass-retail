@@ -23,6 +23,13 @@ export class AppLayout {
 
   protected readonly navItems = computed<SidebarNavItem[]>(() => {
     const items: SidebarNavItem[] = [{ label: this.i18n.t('nav.home'), link: '/app/home' }];
+    // Resolve the user's platform role before exposing workspace modules. A
+    // platform administrator uses the tenant console, not shop operations.
+    if (!this.identity.me.hasValue()) return items;
+    if (this.identity.isPlatformAdmin()) {
+      items.push({ label: this.i18n.t('nav.allTenants'), link: '/app/platform/tenants' });
+      return items;
+    }
     if (this.identity.hasModule('inventory')) {
       items.push({ label: this.i18n.t('nav.products'), link: '/app/products' });
     }
@@ -31,9 +38,6 @@ export class AppLayout {
     }
     if (this.identity.isTenantAdmin() && this.identity.hasModule('sales-insights')) {
       items.push({ label: this.i18n.t('sales.performance'), link: '/app/sales/performance' });
-    }
-    if (this.identity.isPlatformAdmin()) {
-      items.push({ label: this.i18n.t('nav.allTenants'), link: '/app/platform/tenants' });
     }
     return items;
   });

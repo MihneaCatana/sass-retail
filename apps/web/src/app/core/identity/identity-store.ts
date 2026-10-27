@@ -42,12 +42,17 @@ export class IdentityStore {
 
   readonly me = httpResource<Me>(() => (this.isAuthenticated() ? '/api/me' : undefined));
   readonly tenant = httpResource<CurrentTenant>(() =>
-    this.isAuthenticated() ? '/api/tenants/current' : undefined
+    this.isAuthenticated() && this.me.hasValue() && !this.isPlatformAdmin()
+      ? '/api/tenants/current'
+      : undefined
   );
   readonly workspaceModules = httpResource<WorkspaceModules>(() =>
-    this.isAuthenticated() ? '/api/tenants/current/modules' : undefined
+    this.isAuthenticated() && this.me.hasValue() && !this.isPlatformAdmin()
+      ? '/api/tenants/current/modules'
+      : undefined
   );
   readonly moduleResolution = computed<WorkspaceModules | null | undefined>(() => {
+    if (this.isPlatformAdmin()) return null;
     if (this.workspaceModules.hasValue()) return this.workspaceModules.value();
     return this.workspaceModules.error() ? null : undefined;
   });
